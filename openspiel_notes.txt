@@ -1,0 +1,48 @@
+pyspiel.registered_names()  #List of games implemented
+pyspiel.load_game("poker")  #Load game
+
+#Most objects are printable!
+game.num_players()
+game.max_utility()          # Win = +1, Loss = -1, Draw = 0
+game.min_utility()
+game.num_distinct_actions() #Actions possible, state-independent!
+game.new_initial_state()  
+
+#Actions: altijd integer, gebruik action_to_string om informatie te krijgen
+state.current_player()      #0-indexed, non-negative, -4 als game terminal is
+state.is_terminal()         #Gedaan?
+state.returns()             #Uitkomst indien terminal 
+state.legal_actions()       #State dependent
+state.apply_action(int)
+state.action_to_string()
+
+Phase portrait of dynamical systems toont hoe spelers hun acties willen veranderen
+Replicator dynamics: defines time derivative, influences actions
+
+#### DEMO 2
+game.pyspiel.create_matrix_game(Payoff matrix)
+
+state.apply_actions([a1 a2]) #Simultaneous move
+from openspiel.python.egt import dynamics   #Replicator dynamics
+from open_spiel.python.egt.utils import game_payoffs_array
++ numpy
+
+game_payoffs_array(game)        #Maakt numpy array? 
+dyn = dynamics.SinglePopulationDynamics(payoff_matrix, dynamics.replicator)     #Maakt dynamics object
+x = np.array([0.2 0.2 0.6])         #0.2 spelers van type a, 0.2 spelers van type b, 0.6 spelers van type c => 0.2 rock, 0.2 paper, 0.6 scissors
+dyn(x)          #toont dat rock dominant want meer scissors
+x +=  alpha * dyn(x)        #Simuleer convergentie door dit herhaaldelijk te doen (simuleer hoe point flowt door state)
+
+##### DEMO 3
+Markov Decision Process = multiagent. Elke node is een speler
+Policy; mapping van states naar actions
+
+Kuhn poker: initial state deelt kaarten uit, niet echt speler
+state.is_chance_node()          
+state.chance_outcomes()     #indien chance node
+state.information_state_string()        #Beschrijving van state van jouw standpunt (hier enkel de eigen kaart)
+state.information_state_tensor()        #Information state string in bitvorm, bedoeld om invoer te zijn van neural network
+
+
+
+
