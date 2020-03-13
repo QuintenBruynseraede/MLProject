@@ -1,4 +1,4 @@
-import pyspiel
+# import pyspiel
 from open_spiel.python.algorithms import tabular_qlearner
 from open_spiel.python import rl_environment
 from open_spiel.python.algorithms import random_agent
