@@ -17,8 +17,7 @@ def get_replicator_dynamics(game_name, iterations,learning_rate,verbose=False):
     dyn = dynamics.SinglePopulationDynamics(payoff_matrix, dynamics.replicator)
 
     legal_actions = game.num_distinct_actions()
-    #x = [np.random.rand() for _ in range(legal_actions)]
-    x = np.array([0.5,0.2,0.3])
+    x = [np.random.rand() for _ in range(legal_actions)]
     s = sum(x)
     x = [v / s for v in x]
 
@@ -32,11 +31,30 @@ def get_replicator_dynamics(game_name, iterations,learning_rate,verbose=False):
 
     return actions
 
+def matrix_pd_phaseplot(size,learning_rate):
+    game = pyspiel.load_game("matrix_pd")
+    payoff_matrix = game_payoffs_array(game)
+    dyn = dynamics.SinglePopulationDynamics(payoff_matrix, dynamics.replicator)
+
+
+    xy = np.mgrid[0:1.1:1/size, 0:1.1:1/size].reshape(2, -1).T
+    for p in xy:
+        res = p + learning_rate * dyn(p)
+        plt.arrow(p[0],p[1],(res-p)[0],(res-p)[1], head_width=0.01)
+
+    plt.xticks([0,1],["Cooperate","Defect"])
+    plt.yticks([0,1],["Cooperate","Defect"])
+    plt.xlabel("Player 1")
+    plt.ylabel("Player 2")
+    plt.show()
+
+
+
 
 def train_algorithm(algorithm, game):
     env = rl_environment.Environment(game)
 
-def plot_ternary(actions, arrows=True,arrows_every=4, title="Phase diagram"):
+def plot_phase_ternary(actions, arrows=True,arrows_every=2, title="Phase diagram"):
     assert actions.shape[1] == 3
 
     _, tax = ternary.figure()
@@ -57,8 +75,12 @@ def plot_ternary(actions, arrows=True,arrows_every=4, title="Phase diagram"):
     tax.show()
 
 
+
+
+
 if __name__ == "__main__":
-    actions = get_replicator_dynamics("matrix_rps", 10000,0.1,verbose=False)
-    plot_ternary(actions, arrows_every=2, title="Rock Paper Scissors")
+    matrix_pd_phaseplot(20,0.01)
+
     #plt.plot(actions)
     plt.show()
+
