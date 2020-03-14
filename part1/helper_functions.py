@@ -2,6 +2,7 @@ import open_spiel.games
 import pyspiel
 from tabulate import tabulate
 import numpy as np
+import math
 
 def pretty_print_strategies(game,strategies):
     if not isinstance(game,pyspiel.MatrixGame):
@@ -15,4 +16,12 @@ def pretty_print_strategies(game,strategies):
     print(strats)
 
 game = pyspiel.load_game("matrix_pd")
+
+def dist(p1,p2):
+    x1 = p1[0]
+    y1 = p1[1]
+    x2 = p2[0]
+    y2 = p2[1]
+    return math.sqrt((x1-x2)**2+(y1-y2)**2)
+
 
