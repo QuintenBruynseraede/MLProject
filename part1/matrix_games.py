@@ -36,11 +36,11 @@ def get_replicator_dynamics(game_name, iterations,learning_rate,verbose=False):
 def train_algorithm(algorithm, game):
     env = rl_environment.Environment(game)
 
-def plot_ternary(actions, arrows=True,arrows_every=10):
+def plot_ternary(actions, arrows=True,arrows_every=4, title="Phase diagram"):
     assert actions.shape[1] == 3
 
     _, tax = ternary.figure()
-    tax.set_title("Phase diagram", fontsize=15)
+    tax.set_title(title, fontsize=15)
     tax.boundary(linewidth=2.0)
     tax.gridlines(multiple=0.05, color="gray")
     tax.scatter(actions, color='blue', label="Actions", s = 0.1)
@@ -59,6 +59,6 @@ def plot_ternary(actions, arrows=True,arrows_every=10):
 
 if __name__ == "__main__":
     actions = get_replicator_dynamics("matrix_rps", 10000,0.1,verbose=False)
-    plot_ternary(actions, arrows_every=2)
+    plot_ternary(actions, arrows_every=2, title="Rock Paper Scissors")
     #plt.plot(actions)
     plt.show()
