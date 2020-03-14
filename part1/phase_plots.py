@@ -6,7 +6,9 @@ import numpy as np
 import ternary
 from ternary.helpers import project_point
 import matrix_games as mg
-
+from matplotlib.figure import Figure
+from open_spiel.python.egt.visualization import Dynamics2x2Axes
+from open_spiel.python.egt.visualization import Dynamics3x3Axes
 
 #Constructs a phase plot for the prisoners dilemma
 def matrix_pd_phaseplot(size, learning_rate):
@@ -29,12 +31,23 @@ def matrix_pd_phaseplot(size, learning_rate):
     plt.ylabel("Player 2")
     plt.show()
 
+def matrix_mp_phaseplot_open_spiel():
+    game = pyspiel.load_game("matrix_pd")
+    payoff_tensor = game_payoffs_array(game)
+    dyn = dynamics.MultiPopulationDynamics(payoff_tensor, dynamics.replicator)
+    fig = Figure(figsize=(10, 10))
+    ax = fig.add_subplot(222, projection="2x2")
+    ax.quiver(dyn)
+    ax.set_title("mp_phaseplot")
+    # ax.streamplot(dyn)
+    plt.title("Phaseplots")
+    plt.show()
 
 #Construcs a phaseplot for the matching pennies problem
 def matrix_mp_phaseplot(size, learning_rate):
     game = pyspiel.load_game("matrix_mp")
     payoff_matrix = game_payoffs_array(game)
-    payoff_matrix = np.array([[[1,0],[0,1]],[[0,1],[1,0]]])
+    payoff_matrix = np.array([[[1,-1],[-1,1]],[[-1,1],[1,-1]]])
     print(payoff_matrix[0])
     print(payoff_matrix[1])
 
@@ -98,10 +111,12 @@ def matrix_rps_phaseplot(size, learning_rate):
     tax.show()
 
 if __name__ == "__main__":
+
+
     # print(pyspiel.registered_names())
     # matrix_pd_phaseplot(20,0.01)
-    # matrix_mp_phaseplot(20,0.01)
-    matrix_bots_phaseplot(20,0.01)
+    matrix_mp_phaseplot_open_spiel()
+    # matrix_bots_phaseplot(20,0.01)
     # matrix_rps_phaseplot(10000,0.05)
     #plt.plot(actions)
     plt.show()
