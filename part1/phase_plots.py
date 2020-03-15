@@ -3,120 +3,73 @@ from open_spiel.python.egt import dynamics
 from open_spiel.python.egt.utils import game_payoffs_array
 import matplotlib.pyplot as plt
 import numpy as np
-import ternary
-from ternary.helpers import project_point
-import matrix_games as mg
-from matplotlib.figure import Figure
-from open_spiel.python.egt.visualization import Dynamics2x2Axes
-from open_spiel.python.egt.visualization import Dynamics3x3Axes
 
 #Constructs a phase plot for the prisoners dilemma
-def matrix_pd_phaseplot(size, learning_rate):
-    game = pyspiel.load_game("matrix_pd")
-    payoff_matrix = game_payoffs_array(game)
-    dyn = dynamics.SinglePopulationDynamics(payoff_matrix, dynamics.replicator)
-    print(payoff_matrix)
-    print(dyn.dynamics)
+def matrix_pd_phaseplot(size=None, fig=None):
+    fig = plt.figure(figsize=(10, 10)) if fig is None else fig
+    size = 111 if size is None else size
+    assert isinstance(fig, plt.Figure)
 
-    xy = np.mgrid[0:1.1:1 / size, 0:1.1:1 / size].reshape(2, -1).T
-    for p in xy:
-        r = dyn(p)
-        res = p + learning_rate * r
-        plt.arrow(p[0], p[1], (res - p)[0], (res - p)[1], head_width=0.01)
-    
-    plt.title("Phaseplot prisoners dilemma")
-    plt.xticks([0, 1], ["Cooperate", "Defect"])
-    plt.yticks([0, 1], ["Cooperate", "Defect"])
-    plt.xlabel("Player 1")
-    plt.ylabel("Player 2")
-    plt.show()
-
-def matrix_mp_phaseplot_open_spiel():
     game = pyspiel.load_game("matrix_pd")
     payoff_tensor = game_payoffs_array(game)
     dyn = dynamics.MultiPopulationDynamics(payoff_tensor, dynamics.replicator)
-    fig = Figure(figsize=(10, 10))
-    ax = fig.add_subplot(222, projection="2x2")
-    ax.quiver(dyn)
-    ax.set_title("mp_phaseplot")
-    # ax.streamplot(dyn)
-    plt.title("Phaseplots")
-    plt.show()
+    sub = fig.add_subplot(size, projection="2x2")
+    sub.quiver(dyn)
 
-#Construcs a phaseplot for the matching pennies problem
-def matrix_mp_phaseplot(size, learning_rate):
+    sub.set_title("Phaseplot Prisoners dilemma")
+    sub.set_xlabel("Player 1")
+    sub.set_ylabel("Player 2")
+    return sub
+
+def matrix_mp_phaseplot(size=None,fig = None):
+    fig = plt.figure(figsize=(10, 10)) if fig is None else fig
+    size = 111 if size is None else size
+    assert isinstance(fig, plt.Figure)
+
     game = pyspiel.load_game("matrix_mp")
-    payoff_matrix = game_payoffs_array(game)
-    payoff_matrix = np.array([[[1,-1],[-1,1]],[[-1,1],[1,-1]]])
-    print(payoff_matrix[0])
-    print(payoff_matrix[1])
+    payoff_tensor = game_payoffs_array(game)
+    dyn = dynamics.MultiPopulationDynamics(payoff_tensor, dynamics.replicator)
+    sub = fig.add_subplot(size, projection="2x2")
+    sub.quiver(dyn)
 
-    dyn = dynamics.SinglePopulationDynamics(payoff_matrix, dynamics.replicator)
+    sub.set_title("Phaseplot Matching pennies")
+    sub.set_xlabel("Player 1")
+    sub.set_ylabel("Player 2")
+    return sub
 
-    xy = np.mgrid[0:1.1:1 / size, 0:1.1:1 / size].reshape(2, -1).T
-    for p in xy:
-        res = p + learning_rate * dyn(p)
-        plt.arrow(p[0], p[1], (res - p)[0], (res - p)[1], head_width=0.01)
+def matrix_bots_phaseplot(size=None, fig=None):
+    fig = plt.figure(figsize=(10, 10)) if fig is None else fig
+    size = 111 if size is None else size
+    assert isinstance(fig, plt.Figure)
 
-    plt.title("Phase plot matching pennies")
-    plt.xticks([0, 1], ["Heads", "Tails"])
-    plt.yticks([0, 1], ["Heads", "Tails"])
-    plt.xlabel("Player 1")
-    plt.ylabel("Player 2")
-    plt.show()
+    payoff_tensor = np.array([[[3, 0],[0, 2]],[[2, 0],[0,3]]])
+    dyn = dynamics.MultiPopulationDynamics(payoff_tensor, dynamics.replicator)
+    sub = fig.add_subplot(size, projection="2x2")
+    sub.quiver(dyn)
 
+    sub.set_title("Phaseplot Battle of the sexes")
+    sub.set_xlabel("Man")
+    sub.set_ylabel("Woman")
+    return sub
 
-#Construcs a phaseplot for the battle of the sexes problem
-def matrix_bots_phaseplot(size, learning_rate):
-    payoff_matrix = np.array([[[3, 0], [0, 2]], [[2, 0], [0, 3]]])
-    print(payoff_matrix)
+def matrix_rps_phaseplot(size=None, fig=None):
+    fig = plt.figure(figsize=(10, 10)) if fig is None else fig
+    size = 111 if size is None else size
+    assert isinstance(fig, plt.Figure)
 
-    dyn = dynamics.SinglePopulationDynamics(payoff_matrix, dynamics.replicator)
+    game = pyspiel.load_game("matrix_rps")
+    payoff_tensor = game_payoffs_array(game)
+    dyn = dynamics.SinglePopulationDynamics(payoff_tensor, dynamics.replicator)
+    sub = fig.add_subplot(size, projection="3x3")
+    sub.quiver(dyn)
 
-    xy = np.mgrid[0:1.1:1 / size, 0:1.1:1 / size].reshape(2, -1).T
-    for p in xy:
-        res = p + learning_rate * dyn(p)
-        plt.arrow(p[0], p[1], (res - p)[0], (res - p)[1], head_width=0.01)
-
-    plt.xticks([0, 1], ["Football", "Opera"])
-    plt.yticks([0, 1], ["Football", "Opera"])
-    plt.xlabel("Player 1")
-    plt.ylabel("Player 2")
-    plt.show()
-
-
-#Construcs a phaseplot for a biased rock papers scissors
-def matrix_rps_phaseplot(size, learning_rate):
-
-    #Construct actions
-    actions = mg.get_replicator_dynamics("matrix_rpsw",size,learning_rate)
-
-    #Construct phaseplot
-    arrows_every = 2
-    _, tax = ternary.figure()
-    tax.set_title("Phaseplot RPS", fontsize=15)
-    tax.boundary(linewidth=2.0)
-    tax.gridlines(multiple=0.05, color="gray")
-    tax.scatter(actions, color='blue', label="Actions", s = 0.1)
-    ax = tax.get_axes()
-
-    for i in range(len(actions)-1):
-        if i % arrows_every == 0:
-            p1 = project_point(actions[i])
-            p2 = project_point(actions[i+1])
-            ax.arrow(p1[0], p1[1], (p2-p1)[0],(p2-p1)[1],head_width=0.005, head_length=0.005, fc='k', ec='k')
-    tax.clear_matplotlib_ticks()
-    tax.get_axes().axis('off')
-    tax.ticks(axis='lbr', linewidth=1, multiple=5, offset=0.03)
-    tax.show()
+    sub.set_title("Phaseplot Rock Paper Scissors")
+    return sub
 
 if __name__ == "__main__":
-
-
-    # print(pyspiel.registered_names())
-    # matrix_pd_phaseplot(20,0.01)
-    matrix_mp_phaseplot_open_spiel()
-    # matrix_bots_phaseplot(20,0.01)
-    # matrix_rps_phaseplot(10000,0.05)
-    #plt.plot(actions)
+    fig = plt.figure(figsize=(10,10))
+    matrix_pd_phaseplot(221,fig)
+    matrix_mp_phaseplot(222,fig)
+    matrix_bots_phaseplot(223,fig)
+    matrix_rps_phaseplot(224,fig)
     plt.show()
