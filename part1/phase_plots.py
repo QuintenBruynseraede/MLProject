@@ -1,6 +1,8 @@
 import pyspiel
 from open_spiel.python.egt import dynamics
 from open_spiel.python.egt.utils import game_payoffs_array
+from open_spiel.python.egt import utils
+from open_spiel.python.egt import visualization
 import matplotlib.pyplot as plt
 import numpy as np
 
