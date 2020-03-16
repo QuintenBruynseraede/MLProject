@@ -1,4 +1,4 @@
-from open_spiel.python.algorithms import tabular_qlearner
+from open_spiel.python.algorithms.tabular_qlearner import QLearnerInit as qli
 from open_spiel.python.algorithms import random_agent
 from open_spiel.python import rl_agent
 from open_spiel.python import rl_environment
@@ -7,11 +7,13 @@ import collections
 from matplotlib import pyplot as plt
 
 
-def train_algorithms(algo1, algo2, game, iterations=10000):
+def train_algorithms_qlearn_qlearn(game, epsilon, discount_factor, initial_probs,step_size,iterations=10000):
     env = rl_environment.Environment(game)
     num_actions = env.action_spec()["num_actions"]
-    agent1 = algo1(0, num_actions)
-    agent2 = algo2(1, num_actions)
+    p1 = [initial_probs[0], 1-initial_probs[0]]
+    p2 = [initial_probs[1], 1-initial_probs[1]]
+    agent1 = qli(0, num_actions, epsilon=epsilon, discount_factor=discount_factor,initial_probs=p2,step_size=step_size)
+    agent2 = qli(1, num_actions, epsilon=epsilon, discount_factor=discount_factor,initial_probs=p2,step_size=step_size)
     actions = np.zeros((iterations, 2))
 
     #Time-dependent list of actions probabilities throughout training
@@ -42,19 +44,3 @@ def train_algorithms(algo1, algo2, game, iterations=10000):
 
     
     return probs1,probs2
-
-iterations = 40
-algo1 = tabular_qlearner.QLearner
-algo2 = tabular_qlearner.QLearner
-#algo2 = random_agent.RandomAgent
-
-probs1,probs2 = train_algorithms(algo1, algo2, "matrix_pd",iterations=iterations)
-x = range(0,iterations)
-
-plt.title("Odds of cooperation for both agents: expected to converge to zero.")
-plt.plot(x,probs1[:,0], label="Agent 1")
-plt.plot(x,probs2[:,0], label="Agent 2")
-plt.legend()
-
-
-plt.show()
