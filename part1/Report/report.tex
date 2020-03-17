@@ -1,0 +1,42 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage[numbers]{natbib}
+\author{Quinten Bruynseraede}
+\author{Ignace Bleukx}
+\title{Machine Learning Project: part 1}
+\begin{document}
+\maketitle
+
+\section{Literature Review}
+In this first assignment we try to combine basic principles from game theory with the work concerning multi-agent reinforcement learning. Most literature included in this literature review will therefore more of less fall into one of these categories. First we give an overview of the relevant literature. Afterwards, we give a detailed list of the contributions for each paper.
+
+\citet{mas} introduces elementary concepts from game theory. \citet{phdthesis} introduces basic concepts from multi-agent systems, and explains how reinforcement learning algorithms can be used to reach equilibriums in simple games. Replicator dynamics are introduced to model evolutionary concepts in multi-agent systems. \citet{phdthesis} also introduces lenient reinforcement learning to overcome difficulties when bad initial exploration leads to convergence to wrong equilibria.
+
+We use the game-theoretic reinforcement learning framework OpenSpiel for all experiments. The practical details are outlined in \citet{lanctot2019openspiel}. Details about solving the Prisoner's Dilemma using reinforcement learning algorithms are found in \citet{rlforpd}.
+
+
+
+\bigskip
+\begin{tabular}{|p{4cm}|p{9cm}|}
+\hline 
+Article & Contribution \\ 
+\hline 
+\hline
+Multi-agent systems: Algorithmic, Game-Theoretic,and Logical Foundations, \citet{mas} & Game theory  (utility, payoff functions, strategies, zero-sum games, Pareto optimality, Nash equilibria, existence of Nash equilibria), Finding Nash equilibria (minmax and maxmin algorithms)  \\ 
+\hline 
+Multi-agent learning dynamics, \citet{phdthesis} &  Multi-agent systems as a way to solve many problems using sensor data as input and rewards as output, evolutionary modelling (replicator dynamics as selection strategy) \\
+\hline 
+OpenSpiel: A Framework for Reinforcement Learning in Games, \citet{lanctot2019openspiel} & The OpenSpiel framework: installation, design, implemented games and algorithms, visualization \\ 
+\hline 
+Reinforcement learning produces dominant strategies for the Iterated Prisoner’s Dilemma, \citet{rlforpd} & Definition of Prisoner's dilemma, example values for parameter tuning (learning rate, discount factor) \\ 
+\hline 
+The replicator equation on graphs, \citet{Ohtsuki2006TheRE} & Phase plots as a visual representation of graphing evolutionary policies by using replicator dynamics.
+\end{tabular} 
+
+
+\bibliography{lit}{}
+\bibliographystyle{plainnat}
+\end{document}
