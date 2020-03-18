@@ -4,8 +4,7 @@
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \usepackage[numbers]{natbib}
-\author{Quinten Bruynseraede}
-\author{Ignace Bleukx}
+\author{Ignace Bleukx AND Quinten Bruynseraede}
 \title{Machine Learning Project: part 1}
 \begin{document}
 \maketitle
@@ -17,7 +16,7 @@ In this first assignment we try to combine basic principles from game theory wit
 
 We use the game-theoretic reinforcement learning framework OpenSpiel for all experiments. The practical details are outlined in \citet{lanctot2019openspiel}. Details about solving the Prisoner's Dilemma using reinforcement learning algorithms are found in \citet{rlforpd}.
 
-To implement the Lenient Frequency Adjusted Q-Learning, we used \citet{evoldynamics}.
+To implement the Lenient Frequency Adjusted Q-Learning, we used \citet{evoldynamics} and \citet{extrepl}.
 
 
 
@@ -40,6 +39,8 @@ The replicator equation on graphs, \citet{Ohtsuki2006TheRE} & Phase plots as a v
 Analyzing Reinforcement Learning algorithmsusing Evolutionary Game Theory, citet{bloembergenmaster} & Recommended parameter settings for various Q learning algorithms (learning rate, epsilon, step size, etc.) \\
 \hline
 Evolutionary Dynamics of Multi-Agent Learning:A Survey, \citet{evoldynamics} & Mathematical formulation of lenient FAQ-Learning to increase the robustness of regular Q-learning \\
+\hline
+Extended Replicator Dynamics as a Key to Reinforcement Learning in Multi-agent Systems, citet{extrepl} & Extension of classical replicator dynamics by adding mutation, in accordance to Boltzmann dynamics, leniency as a way to overcome convergence to wrong equilibria.
 \end{tabular} 
 
 \section{Independent learning}

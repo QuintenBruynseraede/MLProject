@@ -5,6 +5,7 @@ from open_spiel.python.egt import utils
 from open_spiel.python.egt import visualization
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 
 
 #Constructs a phase plot for the prisoners dilemma
@@ -25,29 +26,53 @@ def matrix_pd_phaseplot(size=None, fig=None):
     sub.set_ylabel("Player 2")
     return sub
 
-def matrix_pd_phaseplot_boltzmann():
+
+def pd_phaseplot_boltzmann(fig):
+    #Load game an payoff matrices
     game = pyspiel.load_game("matrix_pd")
     payoff_tensor = game_payoffs_array(game)
     A = payoff_tensor[0]
     B = payoff_tensor[1]
-    x_vec = np.linspace(0,1,num=11)
-    y_vec = np.linspace(0,1,num=11)
+    size = 111
 
-    for x in x_vec:
-        for y in y_vec:
-            x_policy = np.array([[x, 1-x]]).T
-            y_policy = np.array([[y, 1-y]]).T
-            dx = x * (np.matmul(A,y_policy)[0] - np.matmul(x_policy.T,np.matmul(A,y_policy)))
-            dy = y * (np.matmul(x_policy.T,B).T[0] - np.matmul(x_policy.T,np.matmul(B,y_policy)))
-            length = 1
-            print("({},{}): dx={},dy={}".format(round(x,1),round(y,1),dx,dy))
-            ax = plt.axes()
-            scale = 0.05
-            ax.arrow(x,y,dx[0][0]*scale,dy[0][0]*scale)
-    plt.xlim(0,1)
-    plt.ylim(0,1)
-    plt.show()
+
+    game = pyspiel.load_game("matrix_pd")
+    payoff_tensor = game_payoffs_array(game)
+    dyn = dynamics.MultiPopulationDynamics(payoff_tensor, lenient_boltzmannq)
+    sub = fig.add_subplot(size, projection="2x2")
+    sub.quiver(dyn)
+
+
+    sub.set_title("Phaseplot Prisoners dilemma")
+    sub.set_xlabel("Player 1")
+    sub.set_ylabel("Player 2")
+    return sub
+
+def lenient_boltzmannq(state, fitness):
+    temperature = 1
+    kappa = 6
+    A = np.array([[ 5., 0.],[10., 1.]])
+    x = list()
+    y = list()
+    x.append(fitness[0])
+    x.append(1-fitness[0])
+    y.append(fitness[1])
+    y.append(1-fitness[1])
+    #a i,j = A[i][j]   
+    fitness_exploitation = list()
+    for i in range(len(fitness)):
+        #j=0
+        term0 = A[i][0] * y[0] * ( sum([y[k] for k in range(2) if A[i][k] <= A[i][0]]) ** kappa - sum([y[k] for k in range(2) if A[i][k] < A[i][0]]) ** kappa) / sum([y[k] for k in range(2) if A[i][k] == A[i][0]])
+        #j=1
+        term1 = A[i][1] * y[1] * ( sum([y[k] for k in range(2) if A[i][k] <= A[i][1]]) ** kappa - sum([y[k] for k in range(2) if A[i][k] < A[i][1]]) ** kappa) / sum([y[k] for k in range(2) if A[i][k] == A[i][1]])
+        fitness_exploitation.append(term0+term1)
+    
+    exploitation = (1. / temperature) * dynamics.replicator(state, fitness_exploitation)
+    exploration = (np.log(state) - state.dot(np.log(state).transpose()))
+    return exploitation - state * exploration
 
 if __name__ == "__main__":
-    matrix_pd_phaseplot_boltzmann()
+    fig = plt.figure(figsize=(10,10))
+    pd_phaseplot_boltzmann(fig)
+    plt.show()
 
