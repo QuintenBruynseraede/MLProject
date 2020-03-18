@@ -3,6 +3,7 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{longtable}
 \usepackage[numbers]{natbib}
 \author{Ignace Bleukx AND Quinten Bruynseraede}
 \title{Machine Learning Project: part 1}
@@ -21,7 +22,7 @@ To implement the Lenient Frequency Adjusted Q-Learning, we used \citet{evoldynam
 
 
 \bigskip
-\begin{tabular}{|p{4cm}|p{9cm}|}
+\begin{longtable}{|p{4cm}|p{9cm}|}
 \hline 
 Article & Contribution \\ 
 \hline 
@@ -42,8 +43,9 @@ Analyzing Reinforcement Learning algorithmsusing Evolutionary Game Theory, \cite
 Evolutionary Dynamics of Multi-Agent Learning:A Survey, \citet{evoldynamics} & Like other papers, this document provides a basic knowledge of game theory, as well as reinforcement learning. For our research, mainly the part about lenient FAQ-learning as a way to increase the robustness of Q-learning, is important. FAQ-learning is able to recover from bad exploration in the start of the run, while normal Q-learning is sometimes not. \\
 \hline
 Extended Replicator Dynamics as a Key to Reinforcement Learning in Multi-agent Systems, \citet{extrepl} & To model stochastic policies, populations of players are used. These populations can be described using evolutionary concepts, such as selection and mutation. This paper explains the transition from regular to evolutionary game theory. We received insight on the dynamics of a population through the central notion of replicator dynamics. These selection mechanisms can be extended with mutation, based on the Boltzmann mechanism. To overcome converge to suboptimal equilibria, lenience towards mistakes is introduced in this paper.
-\\ \hline
-\end{tabular} 
+\\ 
+\hline
+\end{longtable} 
 
 \section{Independent learning}
 %TODO: learn 2 agents on all games, show convergence. Do the learning algorithms converge to Nash equilibria. Are these Pareto optimal?
