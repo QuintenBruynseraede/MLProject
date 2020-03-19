@@ -16,7 +16,7 @@ def matrix_pd_phaseplot(size=None, fig=None):
     payoff_tensor = game_payoffs_array(game)
     dyn = dynamics.MultiPopulationDynamics(payoff_tensor, dynamics.replicator)
     sub = fig.add_subplot(size, projection="2x2")
-    sub.quiver(dyn)
+    sub.quiver(dyn,linewidth=0.1)
 
     sub.set_title("Phaseplot Prisoners dilemma")
     sub.set_xlabel("Player 1")

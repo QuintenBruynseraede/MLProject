@@ -1,4 +1,3 @@
-# from open_spiel.python.algorithms.tabular_qlearner import QLearnerInit as qli
 from learners.cross_learner import CrossLearner as cl
 from open_spiel.python.algorithms.tabular_qlearner import QLearner as ql
 from open_spiel.python.algorithms import random_agent
@@ -8,15 +7,11 @@ import numpy as np
 import collections
 from matplotlib import pyplot as plt
 
-def train_algorithms_qlearn_qlearn(game, epsilon, discount_factor, initial_probs,step_size,iterations=10000):
+def self_learn(game, algorithm_name, iterations = 10000, **kwargs):
     env = rl_environment.Environment(game)
     num_actions = env.action_spec()["num_actions"]
-    # p1 = [initial_probs[0], 1-initial_probs[0]]
-    # p2 = [initial_probs[1], 1-initial_probs[1]]
-    # agent1 = qli(0, num_actions, epsilon=epsilon, discount_factor=discount_factor,initial_probs=p2,step_size=step_size)
-    # agent2 = qli(1, num_actions, epsilon=epsilon, discount_factor=discount_factor,initial_probs=p2,step_size=step_size)
-    agent1 = cl(0, num_actions,[0.4,0.6],learning_rate=0.0001)
-    agent2 = cl(1, num_actions, [0.75,0.25],learning_rate=0.0001)
+    kwargs["num_actions"] = num_actions
+    agent1, agent2 = get_agents(algorithm_name,kwargs=kwargs)
 
     actions = np.zeros((iterations, 2))
 
@@ -34,11 +29,9 @@ def train_algorithms_qlearn_qlearn(game, epsilon, discount_factor, initial_probs
             output = list()
             step1 = agent1.step(time_step)
             probs1[episode] = step1.probs
-            #print("Agent 1: {} - {}".format(step1.action,step1.probs))
             output.append(step1.action)
             step2 = agent2.step(time_step)
             probs2[episode] = step2.probs
-            #print("Agent 2: {} - {}".format(step2.action,step2.probs))
             output.append(step2.action)
             time_step = env.step(output)
 
@@ -47,3 +40,23 @@ def train_algorithms_qlearn_qlearn(game, epsilon, discount_factor, initial_probs
         agent2.step(time_step)
 
     return probs1,probs2
+
+
+def get_agents(algorithm_name, kwargs):
+    agent1, agent2 = None,None
+    if algorithm_name == "q_learner":
+        num_actions = kwargs.get("num_actions")
+        epsilon = kwargs.get("epsilon",0.2)
+        discount_factor = kwargs.get("discount_factor",1)
+        step_size = kwargs.get("step_size",0.5)
+        agent1 = ql(0,num_actions=num_actions,step_size=step_size,epsilon=epsilon,discount_factor=discount_factor)
+        agent2 = ql(1,num_actions=num_actions,step_size=step_size,epsilon=epsilon,discount_factor=discount_factor)
+
+    elif algorithm_name == "cross_learner":
+        num_actions = kwargs.get("num_actions")
+        initial_policy = kwargs.get("initial_policy",[[1/num_actions for _ in range(num_actions)],[1/num_actions for _ in range(num_actions)]])
+        learning_rate = kwargs.get("learning_rate",0.01)
+        agent1 = cl(0,num_actions,initial_policy[0],learning_rate)
+        agent2 = cl(1,num_actions,initial_policy[1],learning_rate)
+
+    return agent1,agent2
