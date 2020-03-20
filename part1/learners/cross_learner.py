@@ -9,18 +9,23 @@ class CrossLearner(rl_agent.AbstractAgent):
         assert sum(initial_policy) == 1
 
         self._player_id = player_id
-        self._policy = initial_policy
+        self._policy = list(initial_policy)
         self._num_actions = num_actions
         self._prev_info_state = None
         self._prev_action = None
         self._learning_rate = learning_rate
 
     def step(self, time_step, is_evaluation=False):
+
         info_state = str(time_step.observations["info_state"][self._player_id])
 
         action, probs,reward = None,None,None
         if not time_step.last():
-            action = np.random.choice(range(self._num_actions), p=np.array(self._policy))
+            #Fix errors in accuracy
+            policy = np.array(self._policy)
+            policy[policy <= 0] = 0
+            policy /= sum(policy)
+            action = np.random.choice(range(self._num_actions), p=policy)
             probs = self._policy
 
 

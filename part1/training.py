@@ -6,8 +6,10 @@ from open_spiel.python import rl_environment
 import numpy as np
 import collections
 from matplotlib import pyplot as plt
+import pyspiel
 
-def self_learn(game, algorithm_name, iterations = 10000, **kwargs):
+def self_learn(game_name, algorithm_name, iterations = 10000, **kwargs):
+    game = get_game(game_name)
     env = rl_environment.Environment(game)
     num_actions = env.action_spec()["num_actions"]
     kwargs["num_actions"] = num_actions
@@ -40,6 +42,13 @@ def self_learn(game, algorithm_name, iterations = 10000, **kwargs):
         agent2.step(time_step)
 
     return probs1,probs2
+
+def get_game(game_name):
+    if isinstance(game_name,pyspiel.MatrixGame) or game_name != "matrix_bots":
+        return game_name
+    else:
+        return pyspiel.create_matrix_game([[3,0],[0,2]],
+                                          [[2,0],[0,3]])
 
 
 def get_agents(algorithm_name, kwargs):
