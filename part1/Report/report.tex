@@ -7,13 +7,16 @@
 \usepackage{longtable}
 \usepackage[section]{placeins}
 \usepackage{graphicx}
+\usepackage{xcolor}
 \usepackage[numbers]{natbib}
-\author{Ignace Bleukx AND Quinten Bruynseraede}
+\author{Ignace Bleukx \and Quinten Bruynseraede}
 \title{Machine Learning Project: part 1}
 
 \addtolength{\oddsidemargin}{-.875in}
 \addtolength{\evensidemargin}{-.875in}
 \addtolength{\textwidth}{1.75in}
+\addtolength{\topmargin}{-.875in}
+\addtolength{\textheight}{1.75in}
 \begin{document}
 \maketitle
 
@@ -22,7 +25,7 @@ In this first assignment we try to combine basic principles from game theory wit
 
 
 \bigskip
-\begin{longtable}{|p{5cm}|p{10cm}|}
+\begin{longtable}{|p{4cm}|p{12cm}|}
 \hline 
 Article & Contribution \\ 
 \hline 
@@ -48,7 +51,36 @@ Extended Replicator Dynamics as a Key to Reinforcement Learning in Multi-agent S
 \end{longtable} 
 
 \section{Independent learning}
-%TODO: learn 2 agents on all games, show convergence. Do the learning algorithms converge to Nash equilibria. Are these Pareto optimal?
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{Figures/cl_pd.png}
+    		\caption{Prisoner's dilemma}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{Figures/cl_mp.png}
+        \caption{Matchin Pennies}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{Figures/cl_mp.png}
+        \caption{Battle of the Sexes}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.33\textwidth}
+        \includegraphics[width=\textwidth]{Figures/cl_mp.png}
+        \caption{Rock Paper Scissors} 
+    \end{subfigure}
+    \label{fig:learning}
+\end{figure}
+
+For this section we implemented our own reinforcement learning agent which follows the Cross Learning algorithm. B\"{o}rgers \& Saring were the first to formally prove the relationship between multi-agent learning and evolutionary game theory by proving that Cross Learning converges to the replicator dynamics when the agent's step size goes towards 0. For this reason, we chose implement Cross Learning, as we can expect its learning trajectories to follow our directional plot more or less exactly. In Figure \ref{fig:learning}, we show how our algorithm learns four games: the prisoner's dilemma, the matching pennies game, the battle of the sexes, and biases Rock-Paper-Scissors. Also included in Figure \ref{fig:learning} are the directional phase plots for replicator dynamics.
+
+
+Cross Learning converges to $(0,0)$, the situation in which both prisoners defect. This is a Nash equilibrium, as both players will lower their reward by cooperating while the other player still defects. It is also Pareto optimal, because when one player suddenly decides to cooperate, he himself receives a lower reward. It is therefore not possible to improve a strategy without lowering the reward for another player.
+
+In the Matching Pennies game, the algorithm converges to $(\frac{1}{2},\frac{1}{2}$, which is a Nash equilibrium: if a player decides to change his strategy whilst the other one keeps player heads or tails randomly, he will be at a disadvantage. As Matching Pennies is a zero-sum game, all strategies are Pareto-optimal: there is a set amount of reward to distribute, so improving a player's reward lowers the reward for another player.
+
+\textcolor{red}{TODO: BOTS AND RPS PLOTTEN EN BESCHRIJVEN}
+
 \section{Dynamics of learning}
 
 \subsection{Lenient Boltzmann Q-Learning dynamics}
@@ -101,7 +133,7 @@ Based on \citet{evoldynamics}, we implemented Lenient Boltzmann Q-Learning dynam
 
 Figures \ref{fig:boltz_pd} through \ref{fig:boltz_mp} show the influence of the parameter $\kappa$ on the dynamics. For games such as the Prisoner's Dilemma with one equilibrium (in this case located at 0,0), the difference isn't very interesting. However, in Figure \ref{fig:boltz_bots}, we clearly see how there is no longer attraction to the suboptimal equilibrium at ($\frac{2}{5}$,$\frac{3}{5}$).
 \\
-The influence of $\tau$ is very clear, as shown in Figure \ref{fig:tau}. As $\tau$ increases, exploration of new solutions is greatly preferred. Therefore, an agent will not further capitalize on improvements in his strategy. As a result, policies seem to converge to random guessing.
+The influence of $\tau$ is very clear, as shown in Figure \ref{fig:tau}. As $\tau$ increases, exploration of new solutions is greatly preferred. Therefore, an agent will not further capitalize on improvements in his strategy. As a result, policies seem to converge to random guessing. 
 
 
 
