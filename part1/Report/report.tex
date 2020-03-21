@@ -21,7 +21,7 @@
 \maketitle
 
 \section{Literature Review}
-In this first assignment we try to combine basic principles from game theory with the work concerning multi-agent reinforcement learning. Most literature included in this literature review will therefore more of less fall into one of these categories. First we give an overview of the relevant literature, along with their contributions.
+In this first assignment we try to combine basic principles from game theory with the work concerning multi-agent reinforcement learning. Most literature included in this literature review will therefore more or less fall into one of these categories. First we give an overview of the relevant literature, along with their contributions.
 
 
 \bigskip
@@ -30,11 +30,11 @@ In this first assignment we try to combine basic principles from game theory wit
 Article & Contribution \\ 
 \hline 
 \hline
-Multi-agent systems: Algorithmic, Game-Theoretic,and Logical Foundations, \citet{mas} & This paper provides a thorough explaination of the different aspect of game theory, including different types of equilibria. These concepts are of importance to us since we will investigate whether or not our learning algorithms converge to one of these equilibria. Furthermore, the paper provides a detailed description of different types of games, such as cooperative games and non-cooperative games, as well as the notion of games in normal form.   \\ 
+Multi-agent systems: Algorithmic, Game-Theoretic, and Logical Foundations, \citet{mas} & This paper provides a thorough explanation of the different aspect of game theory, including different types of equilibria. These concepts are of importance to us since we will investigate whether or not our learning algorithms converge to one of these equilibria. Furthermore, the paper provides a detailed description of different types of games, such as cooperative games and non-cooperative games, as well as the notion of games in normal form.   \\ 
 \hline 
 Multi-agent learning dynamics, \citet{phdthesis} &  This thesis on multi agent learning dynamics provides essential information about different game theoretic aspects. Mainly section 2.3 on evolutionary game theory and chapter 3 on learning dynamics are relevant. In this last chapter, the replicator dynamics of many matrix games are investigated and explained very clearly. In this chapter we find an example of the learning pattern we would like to observe with our application of different learning algorithms.   \\
 \hline 
-OpenSpiel: A Framework for Reinforcement Learning in Games, \citet{lanctot2019openspiel} & The paper provides the documentation of the OpenSpiel framework. All aspects of the library are explained, from installation to implemented algorithms and games. Many design choices of the framework are clarified which helps to understand the philosophy behind the framework. In the paper, the game theoretic aspects are briefly touched upon, as well as important concepts of the implemented learning algorithms. This paper is of very much importance to us as we will use (and potentially extend) the OpenSpiel framework for this assignment. \\ 
+OpenSpiel: A Framework for Reinforcement Learning in Games, \citet{lanctot2019openspiel} & The paper provides the documentation of the OpenSpiel framework. All aspects of the library are explained, from installation to implemented algorithms and games. Many design choices of the framework are clarified which helps to understand the philosophy behind the framework. In the paper, the game theoretic aspects are briefly touched, as well as important concepts of the implemented learning algorithms. This paper is of very much importance to us as we will use (and potentially extend) the OpenSpiel framework for this assignment. \\ 
 \hline  
 Reinforcement learning produces dominant strategies for the Iterated Prisoner’s Dilemma, \citet{rlforpd} & 
 This document contains a detailed description of the prisoners dilemma, which we will examine. Some examples of parameters settings for the training algorithms are given, which will help to produce meaningful results when training the learning algorithms of choice.\\ 
@@ -73,12 +73,12 @@ Extended Replicator Dynamics as a Key to Reinforcement Learning in Multi-agent S
     \caption{Learning trajectories in benchmark games}
 \end{figure}
 
-For this section we implemented our own reinforcement learning agent which follows the \textit{Cross Learning} algorithm. B\"{o}rgers \& Saring were the first to formally show the relationship between multi-agent learning and evolutionary game theory by proving that Cross Learning converges to the replicator dynamics when the agent's step size goes towards 0. For this reason, we chose implement Cross Learning: we can expect its learning trajectories to follow our directional plot more or less exactly. In Figure 1, we show how our algorithm learns four games: the prisoner's dilemma, the matching pennies game, the battle of the sexes, and biased Rock-Paper-Scissors. Also included in Figure 1 are the directional phase plots for replicator dynamics. Each plot contains learning trajectories from multiple initial policies.\\
+For this section we implemented our own reinforcement learning agent which follows the \textit{Cross Learning} algorithm. B\"{o}rgers \& Saring were the first to formally show the relationship between multi-agent learning and evolutionary game theory by proving that Cross Learning converges to the replicator dynamics when the agent's step size goes towards 0. For this reason, we chose to implement Cross Learning: we can expect its learning trajectories to follow our directional plot more or less exactly. In Figure 1, we show how our algorithm learns four games: the prisoner's dilemma, the matching pennies game, the battle of the sexes, and biased Rock-Paper-Scissors. Also included in Figure 1 are the directional phase plots for replicator dynamics. Each plot contains learning trajectories from multiple initial policies.\\
 
 
 Cross Learning converges to $(0,0)$ for the Prisoner's Dilemma, the situation in which both prisoners defect. This is a Nash equilibrium, as both players will lower their reward by cooperating while the other player still defects. It is also Pareto optimal, because when one player suddenly decides to cooperate, he himself receives a lower reward. It is therefore not possible to improve a strategy without lowering the reward for another player.\\
 
-In the Matching Pennies game, the algorithm converges to $(\frac{1}{2},\frac{1}{2})$, which is a Nash equilibrium: if a player decides to change his strategy whilst the other one keeps playing heads or tails randomly, he will be at a disadvantage. As Matching Pennies is a zero-sum game, all strategies are Pareto-optimal: there is a set amount of reward to distribute, so improving a player's reward lowers the reward for another player.\\
+In the Matching Pennies game, the algorithm converges to $(\frac{1}{2},\frac{1}{2})$, which is a Nash equilibrium: if a player decides to change his strategy whilest the other one keeps playing heads or tails randomly, he will be at a disadvantage. As Matching Pennies is a zero-sum game, all strategies are Pareto-optimal: there is a set amount of reward to distribute, so improving a player's reward lowers the reward for another player.\\
 
 A known result from Game Theory is that the Battle of the Sexes games has three equilibria, one of which is mixed. The strategies $(1,1)$ and $(0,0)$ are pure Nash equilibria, while $(\frac{3}{5},\frac{2}{5})$ is a mixed Nash equilibrium. $(1,1)$ and $(0,0)$ are Pareto optimal, because changes in policies have the following effects: when one player changes his strategy, both players go to a different activity and receive no reward. When both players change their strategy, one player doesn't go to his preferred activity anymore. The mixed strategy is also Pareto optimal: going to your preferred solution more often lowers the reward of your partner, etc. This mixed strategy is unstable.\\
 
@@ -158,11 +158,22 @@ The influence of $\tau$ is very clear, as shown in Figure \ref{fig:tau}. As $\ta
 \end{figure}
 
 \section{Part 2 and 3}
-The task in parts 2 and 3 are similar: to train an agent to play both games. We will start of by applying some standard tabular learner to the problem, e.g. Cross Learning or Q-Learning. At some point (mostly for Leduc Poker), we will run into practical limits for tabular learners. This is where we explore approximation through neural networks. Deciding which features of the information state to use will be crucial. To improve performance, we will look into approximating hidden features (the opponent's cards). \citet{poker} can be a starting point for this part. When we run into the practical limits of these approximation methods, improving the efficiency of our learning architecture can be examined. \citet{dulacarnold2015deep} propose a tractable learning strategy that scales linearly in the number of actions. Their 'related work' section outlines some other strategies to improve the scalability of training reinforcement learning agents in the context of games. 
-
-
-
+The task in parts 2 and 3 are similar: train an agent to play both games. We will start of by applying some standard tabular learner to the problem, e.g. Cross Learning or Q-Learning. At some point (mostly for Leduc Poker), we will run into practical limits for tabular learners. This is where we explore approximation through neural networks. Deciding which features of the information state to use will be crucial. To improve performance, we will look into approximating hidden features (the opponent's cards). \citet{poker} can be a starting point for this part. When we run into the practical limits of these approximation methods, improving the efficiency of our learning architecture can be examined. \citet{dulacarnold2015deep} propose a tractable learning strategy that scales linearly in the number of actions. Their 'related work' section outlines some other strategies to improve the scalability of training reinforcement learning agents in the context of games. 
 
 \bibliography{lit}{}
 \bibliographystyle{plainnat}
+
+\section*{Appendix}
+The payoff matrix for the biased Rock-Paper-Scissors game is given below:
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+& Rock & Paper & Scissors \\ \hline
+Rock & 0,0 & -1,1 & 2,-2 \\ \hline
+Paper & 1,-1 & 0,0 & -1,1 \\ \hline
+Scissors &-2,2 & 1,-1 & 0,0 \\ \hline
+\end{tabular}
+\end{center}
+
 \end{document}
+
