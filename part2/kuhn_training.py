@@ -1,6 +1,8 @@
 from open_spiel.python import rl_environment
 from open_spiel.python.algorithms.tabular_qlearner import QLearner
-from open_spiel.python.policy import PolicyFromCallable
+from open_spiel.python.policy import TabularPolicy
+from open_spiel.python.algorithms import get_all_states
+import pyspiel
 
 
 def self_train():
@@ -28,5 +30,22 @@ def self_train():
 
 
     print(player1._q_values)
+
+    game = pyspiel.load_game("kuhn_poker")
+    all_states = get_all_states.get_all_states(
+      game,
+      depth_limit=-1,
+      include_terminals=False,
+      include_chance_states=False,
+      to_string=lambda s: s.information_state_string())
+    
+    #Initialized to uniform for each state
+    tabular_policy = TabularPolicy(game)
+
+
+    for state in all_states:
+        state_policy = tabular_policy.policy_for_key(state)
+        print("State: {}, state_policy: {}".format(state,state_policy))
+
 
 self_train()
