@@ -1,8 +1,9 @@
 from absl import app
 from absl import flags
 from absl import logging
-import tensorflow.compat.v1 as tf
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+import tensorflow.compat.v1 as tf
 from open_spiel.python.algorithms import policy_gradient
 from datetime import datetime
 from open_spiel.python import policy
@@ -10,12 +11,12 @@ from open_spiel.python import rl_environment
 from open_spiel.python.algorithms import exploitability
 from open_spiel.python.algorithms import policy_gradient
 from open_spiel.python.algorithms.dqn import DQN
-from open_spiel.python.algorithms.nfsp import NFSP
+from open_spiel.python.algorithms import nfsp
 from agent_policies import AgentPolicies
 from tournament import policy_to_csv
 import matplotlib.pyplot as plt
 
-def dqn(game):
+def dqn_train(game):
     env = rl_environment.Environment(game)
     info_state_size = env.observation_spec()["info_state"][0]
     num_actions = env.action_spec()["num_actions"]
@@ -26,23 +27,30 @@ def dqn(game):
     players = [player1, player2]
     run_agents(game,players,sess)
 
-def nfsp(game):
+def nfsp_train(game):
     env = rl_environment.Environment(game)
     state_size = env.observation_spec()["info_state"][0]
     num_actions = env.action_spec()["num_actions"]
-    
+    kwargs = {
+      "replay_buffer_capacity": 2e5,
+      "epsilon_decay_duration": 2e6,
+      "epsilon_start": 0.06,
+      "epsilon_end": 0.001,
+  }
+
     sess =  tf.Session()
-    players = [NFSP(sess,idx,state_representation_size=state_size,num_actions=num_actions,
+    players = [nfsp.NFSP(sess,idx,state_representation_size=state_size,num_actions=num_actions,
                     hidden_layers_sizes=[64],
-                    reservoir_buffer_capacity=20000000,
+                    reservoir_buffer_capacity=2e6,
                     rl_learning_rate=0.1,
                     sl_learning_rate=0.005,
                     anticipatory_param=0.1,
                     batch_size=128,
                     learn_every=64) for idx in range(2)]  
+    expl_policies_avg = AgentPolicies(env,players,nfsp.MODE.average_policy)
     run_agents(game,players,sess)
 
-def pgrad(game):
+def pgrad_train(game):
     sess = tf.Session()
     env = rl_environment.Environment(game)
     state_size = env.observation_spec()["info_state"][0]

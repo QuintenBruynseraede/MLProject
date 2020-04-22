@@ -1,8 +1,10 @@
 from open_spiel.python import rl_environment
+from open_spiel.python.algorithms.dqn import DQN
 from open_spiel.python.algorithms.tabular_qlearner import QLearner
 from open_spiel.python.policy import TabularPolicy
 from open_spiel.python.algorithms import get_all_states
 import pyspiel
+import tensorflow as tf
 
 
 def self_train():
@@ -11,10 +13,15 @@ def self_train():
 
     player1 = QLearner(0,num_actions)
     player2 = QLearner(1,num_actions)
+    state_size = env.observation_spec()["info_state"][0]
+    with tf.Session as sess:
+        player1 = DQN(sess,0,11,state_representation_size=state_size,num_actions=num_actions)
+        player1 = DQN(sess,1,11,state_representation_size=state_size,num_actions=num_actions)
+
     players = [player1, player2]
 
 
-    iterations = 10000
+    iterations = 1000000
     for episode in range(iterations):
         if episode % 1000 == 0:
             print("Curr_episode", str(episode))
