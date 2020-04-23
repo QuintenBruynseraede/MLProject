@@ -1,6 +1,4 @@
-from absl import app
-from absl import flags
-from absl import logging
+from absl import logging,flags,app
 import tensorflow.compat.v1 as tf
 from open_spiel.python.algorithms import policy_gradient
 from datetime import datetime
@@ -14,10 +12,12 @@ from tournament import policy_to_csv
 import matplotlib.pyplot as plt
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('episodes',int(100000),"Number of training episodes")
+flags.DEFINE_integer('episodes',int(5e5),"Number of training episodes")
+flags.DEFINE_string('game',"kuhn_poker","Game to be played by the agents")
 
-def dqn_train(game):
-    env = rl_environment.Environment(game)
+
+def dqn_train(unused_arg):
+    env = rl_environment.Environment(FLAGS.game)
     state_size = env.observation_spec()["info_state"][0]
     num_actions = env.action_spec()["num_actions"]
     sess =  tf.Session()
@@ -34,13 +34,13 @@ def dqn_train(game):
     run_agents(sess,env,players,expl_policies_avg)
     sess.close()
 
-def nfsp_train(game):
-    env = rl_environment.Environment(game)
+def nfsp_train(unused_arg):
+    env = rl_environment.Environment(FLAGS.game)
     state_size = env.observation_spec()["info_state"][0]
     num_actions = env.action_spec()["num_actions"]
     kwargs = {
       "replay_buffer_capacity": 2e5,
-      "epsilon_decay_duration": 2e6,
+      "epsilon_decay_duration": FLAGS.episodes,
       "epsilon_start": 0.06,
       "epsilon_end": 0.001,
   }
@@ -58,9 +58,9 @@ def nfsp_train(game):
     run_agents(sess,env,players,expl_policies_avg)
     sess.close()
 
-def pgrad_train(game):
+def pgrad_train(unused_arg):
     sess = tf.Session()
-    env = rl_environment.Environment(game)
+    env = rl_environment.Environment(FLAGS.game)
     state_size = env.observation_spec()["info_state"][0]
     num_actions = env.action_spec()["num_actions"]
     
@@ -78,9 +78,8 @@ def pgrad_train(game):
 def run_agents(sess, env, agents, expl_policies_avg):
     
     sess.run(tf.global_variables_initializer())
-    num_episodes = 100000
     exploit_history = list()
-    for ep in range(num_episodes):
+    for ep in range(FLAGS.episodes):
         if (ep + 1) % 1000 == 0:
             expl = exploitability.exploitability(env.game, expl_policies_avg)
             exploit_history.append(expl)
@@ -117,4 +116,4 @@ def run_agents(sess, env, agents, expl_policies_avg):
 
 
 if __name__ == "__main__":
-    nfsp_train("kuhn_poker")
+    app.run(nfsp_train)
