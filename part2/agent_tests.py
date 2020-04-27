@@ -12,9 +12,9 @@ import matplotlib.pyplot as plt
 import pyspiel
 
 FLAGS = flags.FLAGS
+
 flags.DEFINE_integer('episodes',int(5e6+10),"Number of training episodes")
 flags.DEFINE_string('game',"kuhn_poker","Game to be played by the agents")
-
 
 def dqn_train(unused_arg):
     env = rl_environment.Environment(FLAGS.game)
@@ -87,11 +87,10 @@ def cfr_train(unused_arg):
             print("Iteration {} exploitability {}".format(i, conv))
     
     now = datetime.now()
-    policy = solver.current_policy()
+    policy = cfr_solver.average_policy()
     agent_name = "cfr"
-    for pid, agent in enumerate(agents):
+    for pid in [1,2]:
         policy_to_csv(game, policy, f"policies/test_p_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+".csv")
-
 
 
 def neurd_train(unudes_arg):
@@ -110,7 +109,6 @@ def neurd_train(unudes_arg):
                 num_hidden_factors=8,
                 use_skip_connections=True,
                 autoencode=False))
-    sess = tf.Session()
     solver = neurd.CounterfactualNeurdSolver(game, models)
 
     def _train(model, data):
@@ -131,9 +129,9 @@ def neurd_train(unudes_arg):
             print("Iteration {} exploitability {}".format(i, conv))
         
     now = datetime.now()
-    policy = solver.current_policy()
+    policy = PolicyFromDict(solver.current_policy())
     agent_name = "neurd"
-    for pid, agent in enumerate(agents):
+    for pid, agent in enumerate(models):
         policy_to_csv(game, policy, f"policies/test_p_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+".csv")
 
     plt.plot([i for i in range(len(exploit_history))],exploit_history)
