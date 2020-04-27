@@ -12,7 +12,7 @@ from tournament import policy_to_csv
 import matplotlib.pyplot as plt
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('episodes',int(5e5),"Number of training episodes")
+flags.DEFINE_integer('episodes',int(3e6),"Number of training episodes")
 flags.DEFINE_string('game',"kuhn_poker","Game to be played by the agents")
 
 
@@ -80,10 +80,10 @@ def run_agents(sess, env, agents, expl_policies_avg):
     sess.run(tf.global_variables_initializer())
     exploit_history = list()
     for ep in range(FLAGS.episodes):
-        if (ep + 1) % 1000 == 0:
+        if (ep + 1) % 10000 == 0:
             expl = exploitability.exploitability(env.game, expl_policies_avg)
             exploit_history.append(expl)
-        if (ep + 1) % 1000 == 0:
+        if (ep + 1) % 10000 == 0:
             losses = [agent.loss for agent in agents]
             msg = "-" * 80 + "\n"
             msg += "{}: {}\n{}\n".format(ep + 1, expl, losses)
@@ -106,7 +106,10 @@ def run_agents(sess, env, agents, expl_policies_avg):
     for pid, agent in enumerate(agents):
         policy_to_csv(env.game, expl_policies_avg, f"policies/test_p_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+".csv")
 
-   
+    with open("exploitabilities.txt","w") as f:
+        for item in exploit_history:
+            f.write(item)
+
     plt.plot([i for i in range(len(exploit_history))],exploit_history)
     plt.ylim(0.01,1)
     plt.yticks([1,0.1,0.01])
