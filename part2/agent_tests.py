@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import pyspiel
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('episodes',int(10000),"Number of training episodes")
+flags.DEFINE_integer('episodes',int(5e6+10),"Number of training episodes")
 flags.DEFINE_string('game',"kuhn_poker","Game to be played by the agents")
 
 
@@ -147,19 +147,24 @@ def neurd_train(unudes_arg):
 
 
 def run_agents(sess, env, agents, expl_policies_avg):
-    
+    agent_name = "nfsp"
+    write_policy_at = [1e4,1e5,1e6,3e6,5e6]
     sess.run(tf.global_variables_initializer())
     exploit_history = list()
     for ep in range(FLAGS.episodes):
-        if (ep + 1) % 1000 == 0:
+        if (ep + 1) % 10000 == 0:
             expl = exploitability.exploitability(env.game, expl_policies_avg)
             exploit_history.append(expl)
-        if (ep + 1) % 1000 == 0:
+            with open("exploitabilities.txt","a") as f:
+                f.write(str(expl)+"\n")
             losses = [agent.loss for agent in agents]
             msg = "-" * 80 + "\n"
             msg += "{}: {}\n{}\n".format(ep + 1, expl, losses)
             logging.info("%s", msg)
-            print(msg)
+
+        if ep in write_policy_at:
+            for pid, agent in enumerate(agents):
+                policy_to_csv(env.game, expl_policies_avg, f"policies/policy_"+agent_name+"_"+datetime.now().strftime("%m-%d-%Y_%H-%M")+"_"+str(pid+1)+"_"+str(ep)+"episodes.csv")    
 
         time_step = env.reset()
         while not time_step.last():
@@ -173,9 +178,8 @@ def run_agents(sess, env, agents, expl_policies_avg):
             agent.step(time_step)
 
     now = datetime.now()
-    agent_name = "nfsp"
     for pid, agent in enumerate(agents):
-        policy_to_csv(env.game, expl_policies_avg, f"policies/test_p_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+".csv")
+        policy_to_csv(env.game, expl_policies_avg, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(ep)+"episodes.csv")
 
    
     plt.plot([i for i in range(len(exploit_history))],exploit_history)
@@ -187,4 +191,4 @@ def run_agents(sess, env, agents, expl_policies_avg):
 
 
 if __name__ == "__main__":
-    app.run(cfr_train)
+    app.run(nfsp_train)
