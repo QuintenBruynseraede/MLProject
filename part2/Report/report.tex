@@ -25,11 +25,18 @@ The seconds step is to update the average policy by using the calculated best re
 \end{math}.\\
 Where $\pi_n(u)$ indicates the action probabilities of the policy at iteration $n$, $\beta_n$ the best reponse calcuated in step 1 and $\sigma{u}$ a sequence of actions to reach state $u$. $x{\beta}(\sigma_u)$ is the realization plan for this sequence, given best response $\beta$.\\
 The main issue with this form of fictitous self-play is the computational effort needed to calculate the best response. Therefore, many extensions and variations exist to effeciently calculate this best response and update the policy. As \cite{fsp-ext} points out, the FSP framework consists of machine learning approches to compute both the best response, as well as update the policy. 
-In the next section, this is done by using a neural network.
-
-
+In the next section, this is done by ANN's.
 
 \subsubsection{Extension: Neural Fictitious Self-Play}
+In the NFSP algorithm, the steps described above are approximated by using two neural networks.
+\paragraph{Best response}
+As stated in the previous section, the FSP framework consists of two steps, the first of which is calculating the best response for a given state. In the NFSP setting this step is done by training a Deep Q-network or DQN. This agent learns an $\epsilon$-greedy policy \cite{heinrichphd}. This can be done as the games considered have perfect recall and the history of the game is thus available to the agents. By using this history the agent gains experience and approximates the best response for a given state.
+The implementation of NFSP in OpenSpiel uses a multilayer perceptron network (MLP).
+\paragraph{Average Strategy}
+To compute the action probabilities for a given state in the game, NFSP trains another ANN which maps these state to the corresponding probabilities. This network is trained by using information of past actions performed. As the average policy is approximated, the network does not need to be consulted every iteration of the learning process. This means the update can be much more effecient when using a good ANN.
+In the OpenSpiel implementation of NFSP this is an MLP.
+
+
 \subsection{Algorithm 2: Counterfactual Regret Minimization}
 \subsubsection{Extension: Regression Counterfactual Regret Minimization}
 \subsubsection{Extension: Counterfactual Regret Minimization against best responder}
