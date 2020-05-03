@@ -6,6 +6,7 @@
 \usepackage{tcolorbox}
 \usepackage[numbers]{natbib}
 \usepackage[margin=1.5in]{geometry}
+\usepackage{ amssymb }
 
 \title{Machine Learning Project: Report 2}
 \author{Ignace Bleukx \and Quinten Bruynseraede}
@@ -39,17 +40,52 @@ In the next section, this is done by using a neural network.
 \subsection{Algorithm 2: Counterfactual Regret Minimization}
 Counterfactual Regret Minimization (CFR in short) is an algorithm that is designed to find Nash equilibria in large games. It introduces the notion of counterfactual regret, and minimizes this to compute a Nash Equilibrium. \citeauthor{cfr} \citep{cfr} show that CFR can solve games with up to $10^{12}$ states, such as Texas Hold'em. We therefore expect it to perform well on reduced variants of traditional poker, such as Kuhn and Leduc poker.\\
 
-An important concept in reinforcement learning is the notion of regret, which can be paraphrased as the difference between maximum and actual payoff an agent receives when executing a sequence of steps. The goal of many reinforcement learning algorithms is to minimize regret. What makes regret minimization less applicable in large games, is that regret is to be minimized over all game states. This quickly becomes infeasible when dealing with a large number of states. The general idea of counterfactual regret minimization is to decompose regret into a set of regret terms, whose som approaches the actual regret. \citeauthor{cfr} then show that individually minimizing these regret terms leads to a Nash equilibrium. We will now introduce counterfactual regret minimization more formally.\\
+An important concept in reinforcement learning is the notion of regret, which can be paraphrased as the difference between maximum and actual payoff an agent receives when executing a sequence of steps. The goal of many reinforcement learning algorithms is to minimize regret. What makes regret minimization less applicable in large games, is that regret is to be minimized over all game states. This quickly becomes infeasible when dealing with a large number of states. The general idea of counterfactual regret minimization is to decompose regret into a set of regret terms, whose som approaches the actual regret. \citeauthor{cfr} then show that individually minimizing these regret terms leads to a Nash equilibrium. We will now introduce counterfactual regret minimization more formally, based on \citep{cfr_for_beginners}\\
 
 \begin{itemize}
 \item{A history $h$ is a sequence of actions performed by the agents, starting from the root of the game tree (the initial state). }
 \item{An information state $I$ consists of a player and the information that is visible to that player.}
-\item{All player have their individual strategies, and we call the combination of these strategies at time $t$: $\sigma^t$.}
-
-
+\item{All player have their individual strategies, and we call the combination of these strategies at time $t$: $\sigma^t$. $\sigma^t_{I \rightarrow a}$ denotes a strategy identical to $\sigma$, but action $a$ will always be taken in information state $I$.}
+\item{Counterfactual ($-i$) refers to excluding the probabilities of actions that player $i$ took, as if he guided (with action probabilities 1) the game towards a certain history or information. We can use this definition to calculate $P^{\sigma}_{-i}(h)$ and $P^{\sigma}_{-i}(I)$.}
+\item{The counterfactual value of a history $h$ under a joint strategy $\sigma$ is defined as:
+\begin{equation}
+v_{i}(\sigma,h) = \sum_{z \in Z, h \sqsubset z }{P^{\sigma}_{-i}(h)P^{\sigma}(h,z)u_i(z)}
+\end{equation}
+where $Z$ denotes the set of possible terminal game histories, and $h$ is any non-terminal subhistory of $z \in Z$. This equation captures that the value of a certain history has to be weighed to account for the counterfactual probabilities. More specifically, the actions of other players (where chance influences their play) influence the probability of a history, which is taken into account.}
+\item{The counterfactual regret is defined as:
+\begin{equation}
+r(h,a) = v_{i}(\sigma_{I \rightarrow a},h) - v_{i}(\sigma,h)
+\end{equation}
+This regret captures how much value was lost by \textit{not} picking action $a$, as opposed to a strategy that does execute $a$ in history $h$.}
+\item{The counterfactual regret of not taking an action $a$ in information state $I$ is simply the sum of regret of all histories in $I$:
+\begin{equation}
+r(I,a) = \sum_{h \in I}{r(h,a)}
+\end{equation}}
+\item{Finally, the cumulative counterfactual regret of not taking action $a$ in information state $I$ if called $R^T(I,a)$ and can be expressed as the sum of regrets at all time steps:
+\begin{equation}
+R^T(I,a) = \sum_{t=1}^{T}{r(h,a)}
+\end{equation}}
 \end{itemize}
 
+As expected, the goal is to locally minimize this regret for each information state. This is done iteratively. In each step, a strategy can be extracted from the counterfactual regrets. One way of doing this is using regret matching, where action probabilities are computed proportional to positive regrets. For example, a high positive regret indicates that small losses have been experienced when not picking a certain an action. It is therefore interesting to perform this action more often, and it will be given a higher weight.
+
+Openspiel uses Hart and Mas-Colell's regret-matching algorithm, which obtains a new strategy $\sigma^{T+1}$ in the following way:
+\begin{equation}
+\sigma_{i}^{T+1}(I,a) = 
+	\begin{cases}
+	\frac{R_{i}^{T,+}(I,a)}{\sum_{a \in A(I)}{R_{i}^{T,+}(I,a)}} \text{ if denominator }> 0 \\
+	\frac{1}{|A(I)|} \text{ otherwise}\\
+	\end{cases}
+\end{equation}
+
+In this equation, $A(I)$ denotes the set of actions that can be taken in information state I, and $R^+$ is obtained by bounding regret values in the interval $\mathclose[0,\infty\mathclose[$. The value of $\sigma^{T+1}$ is calculated for each information state and each action to obtain a complete strategy.
+
+It should be noted that the average strategy converges to a Nash equilibrium, and not the final strategy. When discussing results of policies obtained using CFR, it is implicitly assumed we have extracted the average policy after training.
+
 \subsubsection{Extension: Regression Counterfactual Regret Minimization}
+Regression CFR (introduced by \citeauthor{regression_cfr} \citep{regression_cfr}) is an extension of CFR where counterfactual regret values are not stored in a tabular format, but estimated using a function $\phi: I \times A \mapsto \mathbb{R}$.\\
+
+One interesting property of using regression CFR (RCFR) is the fact that a game can be abstracted down using a appropriate regressor. Consider a game like Texas Hold'em Poker, with roughly $10^{160}$ possible sequences. Storing all counterfactual regret values quickly becomes impossible. A solution is to assign regret values to clusters and estimate a representative for each cluster. This might reduce the number of values to a manageable size. In RCFR, this clustering is done implicitly when choosing a regressor: a simple model such as bounded regression trees will learn rough abstractions, whereas a neural netwerk may not add any abstraction at all. Furthermore, RCFR is able to adapt the regressor $\phi$ on the fly, increasing or decreasing abstraction as needed.
 \subsubsection{Extension: Counterfactual Regret Minimization against best responder}
 \subsubsection{Extension: Deep Counterfactual Regret Minimization}
 
