@@ -6,6 +6,7 @@
 \usepackage{tcolorbox}
 \usepackage[numbers]{natbib}
 \usepackage[margin=1.5in]{geometry}
+\usepackage{ amssymb }
 
 \title{Machine Learning Project: Report 2}
 \author{Ignace Bleukx \and Quinten Bruynseraede}
@@ -13,9 +14,18 @@
 \maketitle
 \section{Introduction}
 \subsection{Evaluation metrics}
-Evaluation of agents is traditionally done using \textbf{NashConv} and \textbf{exploitability}. We introduce these concepts here, using terminology consistent with 
+Evaluation of agents is traditionally done using \textbf{NashConv} and \textbf{exploitability}. We introduce these concepts here, using terminology consistent with \citeauthor{lanctot2019openspiel} \citep{lanctot2019openspiel}.
 
-Given a policy $\pi$,
+Given a two-player policy$\pi$, we say that $\pi^{b}_{i}$ is the best response for player $i$. The best response is defined as the policy that maximizes payoff for player $i$, given the policies of other players ($pi_{-i}$). 
+
+We then define the incentive to change policies $d_{i}(\pi)$ as $d_{i}(\pi) = u_{i}(\pi^{b}_{i},\pi_{-i}) - u_{i}(\pi)$, i.e. the possible gain in value when switching to a best-response strategy. It is clear that this can be used as a metric to evaluate a policy: a Nash equilibrium is found when $d_{i}(\pi)$ = 0 (the policy cannot be improved given other player's policies). Any value $>0$ captures room for improvement for a given theory. 
+
+From this initial notion of policy evaluation, the \textbf{NashConv} metric is derived as the sum of $d_{i}(\pi)$ for both players.
+
+Another metric that is often used, is \textbf{exploitability}. For two-player zero-sum games (such as the games we will be learning in this assignment), exploitability equals $\frac{NashConv}{2}$. We therefore only use Exploitability to evaluate our policies (as NashConv can be derived from Exploitability in this case).
+
+Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). It should also be noted that convergence toward Nash equilibria is a property of individual algorithms, and is not guaranteed.
+
 \subsection{Algorithm 1: Fictitious Self-Play}
 In this algorithm the agent plays against itself and tries to improve its strategy by exploiting its own weaknesses. The variant of this algorithm implemented in Open Spiel is the Extensive-Form Fictitious Self-Play algorithm (XFP). In this algorithm the agent performs two steps at every iteration \citep{fsp-ext}. In the first step, the best response to the current policy $\pi$ is generated, in the second step the policy is updated based on the best response.\\
 To find the best reponse to the current strategy, the game state tree is traverse and the set of best responsed is calculated. Out of this set, a best reponse is selected. As the agent plays against itself, the game state tree is known as the probabilities for all actions in all states are known.\\
@@ -25,8 +35,7 @@ The seconds step is to update the average policy by using the calculated best re
 \end{math}.\\
 Where $\pi_n(u)$ indicates the action probabilities of the policy at iteration $n$, $\beta_n$ the best reponse calcuated in step 1 and $\sigma{u}$ a sequence of actions to reach state $u$. $x{\beta}(\sigma_u)$ is the realization plan for this sequence, given best response $\beta$.\\
 The main issue with this form of fictitous self-play is the computational effort needed to calculate the best response. Therefore, many extensions and variations exist to effeciently calculate this best response and update the policy. As \cite{fsp-ext} points out, the FSP framework consists of machine learning approches to compute both the best response, as well as update the policy. 
-In the next section, this is done by ANN's.
-
+In the next section, this is done by using a neural network.
 \subsubsection{Extension: Neural Fictitious Self-Play}
 In the NFSP algorithm, the steps described above are approximated by using two neural networks.
 \paragraph{Best response}
@@ -35,10 +44,55 @@ The implementation of NFSP in OpenSpiel uses a multilayer perceptron network (ML
 \paragraph{Average Strategy}
 To compute the action probabilities for a given state in the game, NFSP trains another ANN which maps these state to the corresponding probabilities. This network is trained by using information of past actions performed. As the average policy is approximated, the network does not need to be consulted every iteration of the learning process. This means the update can be much more effecient when using a good ANN.
 In the OpenSpiel implementation of NFSP this is an MLP.
-
-
 \subsection{Algorithm 2: Counterfactual Regret Minimization}
+Counterfactual Regret Minimization (CFR in short) is an algorithm that is designed to find Nash equilibria in large games. It introduces the notion of counterfactual regret, and minimizes this to compute a Nash Equilibrium. \citeauthor{cfr} \citep{cfr} show that CFR can solve games with up to $10^{12}$ states, such as Texas Hold'em. We therefore expect it to perform well on reduced variants of traditional poker, such as Kuhn and Leduc poker.\\
+
+An important concept in reinforcement learning is the notion of regret, which can be paraphrased as the difference between maximum and actual payoff an agent receives when executing a sequence of steps. The goal of many reinforcement learning algorithms is to minimize regret. What makes regret minimization less applicable in large games, is that regret is to be minimized over all game states. This quickly becomes infeasible when dealing with a large number of states. The general idea of counterfactual regret minimization is to decompose regret into a set of regret terms, whose som approaches the actual regret. \citeauthor{cfr} then show that individually minimizing these regret terms leads to a Nash equilibrium. We will now introduce counterfactual regret minimization more formally, based on \citep{cfr_for_beginners}\\
+
+\begin{itemize}
+\item{A history $h$ is a sequence of actions performed by the agents, starting from the root of the game tree (the initial state). }
+\item{An information state $I$ consists of a player and the information that is visible to that player.}
+\item{All player have their individual strategies, and we call the combination of these strategies at time $t$: $\sigma^t$. $\sigma^t_{I \rightarrow a}$ denotes a strategy identical to $\sigma$, but action $a$ will always be taken in information state $I$.}
+\item{Counterfactual ($-i$) refers to excluding the probabilities of actions that player $i$ took, as if he guided (with action probabilities 1) the game towards a certain history or information. We can use this definition to calculate $P^{\sigma}_{-i}(h)$ and $P^{\sigma}_{-i}(I)$.}
+\item{The counterfactual value of a history $h$ under a joint strategy $\sigma$ is defined as:
+\begin{equation}
+v_{i}(\sigma,h) = \sum_{z \in Z, h \sqsubset z }{P^{\sigma}_{-i}(h)P^{\sigma}(h,z)u_i(z)}
+\end{equation}
+where $Z$ denotes the set of possible terminal game histories, and $h$ is any non-terminal subhistory of $z \in Z$. This equation captures that the value of a certain history has to be weighed to account for the counterfactual probabilities. More specifically, the actions of other players (where chance influences their play) influence the probability of a history, which is taken into account.}
+\item{The counterfactual regret is defined as:
+\begin{equation}
+r(h,a) = v_{i}(\sigma_{I \rightarrow a},h) - v_{i}(\sigma,h)
+\end{equation}
+This regret captures how much value was lost by \textit{not} picking action $a$, as opposed to a strategy that does execute $a$ in history $h$.}
+\item{The counterfactual regret of not taking an action $a$ in information state $I$ is simply the sum of regret of all histories in $I$:
+\begin{equation}
+r(I,a) = \sum_{h \in I}{r(h,a)}
+\end{equation}}
+\item{Finally, the cumulative counterfactual regret of not taking action $a$ in information state $I$ if called $R^T(I,a)$ and can be expressed as the sum of regrets at all time steps:
+\begin{equation}
+R^T(I,a) = \sum_{t=1}^{T}{r(h,a)}
+\end{equation}}
+\end{itemize}
+
+As expected, the goal is to locally minimize this regret for each information state. This is done iteratively. In each step, a strategy can be extracted from the counterfactual regrets. One way of doing this is using regret matching, where action probabilities are computed proportional to positive regrets. For example, a high positive regret indicates that small losses have been experienced when not picking a certain an action. It is therefore interesting to perform this action more often, and it will be given a higher weight.
+
+Openspiel uses Hart and Mas-Colell's regret-matching algorithm, which obtains a new strategy $\sigma^{T+1}$ in the following way:
+\begin{equation}
+\sigma_{i}^{T+1}(I,a) = 
+	\begin{cases}
+	\frac{R_{i}^{T,+}(I,a)}{\sum_{a \in A(I)}{R_{i}^{T,+}(I,a)}} \text{ if denominator }> 0 \\
+	\frac{1}{|A(I)|} \text{ otherwise}\\
+	\end{cases}
+\end{equation}
+
+In this equation, $A(I)$ denotes the set of actions that can be taken in information state I, and $R^+$ is obtained by bounding regret values in the interval $\mathclose[0,\infty\mathclose[$. The value of $\sigma^{T+1}$ is calculated for each information state and each action to obtain a complete strategy.
+
+It should be noted that the average strategy converges to a Nash equilibrium, and not the final strategy. When discussing results of policies obtained using CFR, it is implicitly assumed we have extracted the average policy after training.
+
 \subsubsection{Extension: Regression Counterfactual Regret Minimization}
+Regression CFR (introduced by \citeauthor{regression_cfr} \citep{regression_cfr}) is an extension of CFR where counterfactual regret values are not stored in a tabular format, but estimated using a function $\phi: I \times A \mapsto \mathbb{R}$.\\
+
+One interesting property of using regression CFR (RCFR) is the fact that a game can be abstracted down using a appropriate regressor. Consider a game like Texas Hold'em Poker, with roughly $10^{160}$ possible sequences. Storing all counterfactual regret values quickly becomes impossible. A solution is to assign regret values to clusters and estimate a representative for each cluster. This might reduce the number of values to a manageable size. In RCFR, this clustering is done implicitly when choosing a regressor: a simple model such as bounded regression trees will learn rough abstractions, whereas a neural netwerk may not add any abstraction at all. Furthermore, RCFR is able to adapt the regressor $\phi$ on the fly, increasing or decreasing abstraction as needed.
 \subsubsection{Extension: Counterfactual Regret Minimization against best responder}
 \subsubsection{Extension: Deep Counterfactual Regret Minimization}
 
