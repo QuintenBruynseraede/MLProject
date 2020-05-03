@@ -13,12 +13,29 @@
 \maketitle
 \section{Introduction}
 \subsection{Evaluation metrics}
-Evaluation of agents is traditionally done using \textbf{NashConv} and \textbf{exploitability}. We introduce these concepts here, using terminology consistent with 
+Evaluation of agents is traditionally done using \textbf{NashConv} and \textbf{exploitability}. We introduce these concepts here, using terminology consistent with \citeauthor{lanctot2019openspiel} \citep{lanctot2019openspiel}.
 
-Given a policy $\pi$,
+Given a two-player policy$\pi$, we say that $\pi^{b}_{i}$ is the best response for player $i$. The best response is defined as the policy that maximizes payoff for player $i$, given the policies of other players ($pi_{-i}$). 
+
+We then define the incentive to change policies $d_{i}(\pi)$ as $d_{i}(\pi) = u_{i}(\pi^{b}_{i},\pi_{-i}) - u_{i}(\pi)$, i.e. the possible gain in value when switching to a best-response strategy. It is clear that this can be used as a metric to evaluate a policy: a Nash equilibrium is found when $d_{i}(\pi)$ = 0 (the policy cannot be improved given other player's policies). Any value $>0$ captures room for improvement for a given theory. 
+
+From this initial notion of policy evaluation, the \textbf{NashConv} metric is derived as the sum of $d_{i}(\pi)$ for both players.
+
+Another metric that is often used, is \textbf{exploitability}. For two-player zero-sum games (such as the games we will be learning in this assignment), exploitability equals $\frac{NashConv}{2}$. We therefore only use Exploitability to evaluate our policies (as NashConv can be derived from Exploitability in this case).
+
+Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). It should also be noted that convergence toward Nash equilibria is a property of individual algorithms, and is not guaranteed.
+
 \subsection{Algorithm 1: Fictitious Self-Play}
 \subsubsection{Extension: Neural Fictitious Self-Play}
 \subsection{Algorithm 2: Counterfactual Regret Minimization}
+Counterfactual Regret Minimization (CFR in short) is an algorithm that is designed to find Nash equilibria in large games. It introduces the notion of counterfactual regret, and minimizes this to compute a Nash Equilibrium. \citeauthor{cfr} \citep{cfr} show that CFR can solve games with up to $10^{12}$ states, such as Texas Hold'em. We therefore expect it to perform well on reduced variants of traditional poker, such as Kuhn and Leduc poker.\\
+
+An important concept in reinforcement learning is the notion of regret, which can be paraphrased as the difference between maximum and actual payoff an agent receives when executing a sequence of steps. The goal of many reinforcement learning algorithms is to minimize regret. What makes regret minimization less applicable in large games, is that regret is to be minimized over all game states. This quickly becomes infeasible when dealing with a large number of states. The general idea of counterfactual regret minimization is to decompose regret into a set of regret terms, whose som approaches the actual regret. \citeauthor{cfr} then show that individually minimizing these regret terms leads to a Nash equilibrium. We will now introduce counterfactual regret minimization more formally.\\
+
+\begin{itemize}
+\item{A history $h$ is a sequence of actions performed by the agents, starting from the root of the game tree (the initial state). }
+\item{An information state $I$ consists of a player and the information that is visible to that player.}
+
 \subsubsection{Extension: Regression Counterfactual Regret Minimization}
 \subsubsection{Extension: Counterfactual Regret Minimization against best responder}
 \subsubsection{Extension: Deep Counterfactual Regret Minimization}
