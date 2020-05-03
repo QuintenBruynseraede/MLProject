@@ -17,6 +17,18 @@ Evaluation of agents is traditionally done using \textbf{NashConv} and \textbf{e
 
 Given a policy $\pi$,
 \subsection{Algorithm 1: Fictitious Self-Play}
+In this algorithm the agent plays against itself and tries to improve its strategy by exploiting its own weaknesses. The variant of this algorithm implemented in Open Spiel is the Extensive-Form Fictitious Self-Play algorithm (XFP). In this algorithm the agent performs two steps at every iteration \citep{fsp-ext}. In the first step, the best response to the current policy $\pi$ is generated, in the second step the policy is updated based on the best response.\\
+To find the best reponse to the current strategy, the game state tree is traverse and the set of best responsed is calculated. Out of this set, a best reponse is selected. As the agent plays against itself, the game state tree is known as the probabilities for all actions in all states are known.\\
+The seconds step is to update the average policy by using the calculated best response. The update rule is the following:
+\begin{math}
+\pi_{i+1}(u) = \pi_{i}(u) + \frac{\alpha_{i+1}x_{\beta_{i+1}}(\sigma_{u})(\beta_{i+1}(u) - \pi_i(u))}{(1-\alpha_{i+1})x_{\pi_i}(\sigma_{u}) + \alpha_{i+1}x_{\beta_{i+1}}(\sigma_u)}
+\end{math}.\\
+Where $\pi_n(u)$ indicates the action probabilities of the policy at iteration $n$, $\beta_n$ the best reponse calcuated in step 1 and $\sigma{u}$ a sequence of actions to reach state $u$. $x{\beta}(\sigma_u)$ is the realization plan for this sequence, given best response $\beta$.\\
+The main issue with this form of fictitous self-play is the computational effort needed to calculate the best response. Therefore, many extensions and variations exist to effeciently calculate this best response and update the policy. As \cite{fsp-ext} points out, the FSP framework consists of machine learning approches to compute both the best response, as well as update the policy. 
+In the next section, this is done by using a neural network.
+
+
+
 \subsubsection{Extension: Neural Fictitious Self-Play}
 \subsection{Algorithm 2: Counterfactual Regret Minimization}
 \subsubsection{Extension: Regression Counterfactual Regret Minimization}
