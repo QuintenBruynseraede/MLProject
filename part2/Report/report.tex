@@ -13,25 +13,42 @@
 \maketitle
 \section{Introduction}
 \subsection{Evaluation metrics}
+Evaluation of agents is traditionally done using \textbf{NashConv} and \textbf{exploitability}. We introduce these concepts here, using terminology consistent with 
+
+Given a policy $\pi$,
+\subsection{Algorithm 1: Fictitious Self-Play}
+\subsubsection{Extension: Neural Fictitious Self-Play}
+\subsection{Algorithm 2: Counterfactual Regret Minimization}
+\subsubsection{Extension: Regression Counterfactual Regret Minimization}
+\subsubsection{Extension: Counterfactual Regret Minimization against best responder}
+\subsubsection{Extension: Deep Counterfactual Regret Minimization}
+
+
 \section{Kuhn Poker}
 \begin{tcolorbox}
 \begin{itemize}
-\item{Which algorithm is most suitable to develop an agent to play Kuhn Poker, maximizing exploitability?}
+\item{Which algorithm is most suitable to develop an agent to play Kuhn Poker, minimizing exploitability?}
 \item{Can we exploit properties of Kuhn Poker to optimize parameters?}
-
 \end{itemize}
 \end{tcolorbox}
 
 \section{Leduc Poker}
 \begin{tcolorbox}
 \begin{itemize}
-\item{Which algorithm is most suitable to develop an agent to play Leduc Poker, maximizing exploitability?}
-\item{Can we exploit properties of Kuhn Poker to optimize parameters?}
+\item{Which algorithm is most suitable to develop an agent to play Leduc Poker, minimizing exploitability?}
+\item{Can we exploit properties of Leduc Poker to optimize parameters?}
+\item{Can we combine agents into an ensemble that minimizes exploitability further than its parts?}
 \end{itemize}
 \end{tcolorbox}
 
+
 \bibliographystyle{plainnat}
-\bibliography{citations}
+\bibliography{lit}
 \section*{Appendix}
 \subsection{Time spent}
 \end{document}
+
+CFR
+Regression CFR
+CFR-BR
+Deep CFR
