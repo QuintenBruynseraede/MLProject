@@ -6,15 +6,18 @@ from open_spiel.python import rl_environment
 from open_spiel.python.algorithms import exploitability
 from open_spiel.python.algorithms import policy_gradient
 from open_spiel.python.algorithms import nfsp,dqn,cfr,neurd
+from open_spiel.python.egt.examples import alpharank_example
+from open_spiel.python.egt import alpharank
 from agent_policies import NFSPPolicies,QLearnerPolicies,DQNPolicies,PolicyGradientPolicies
 from tournament import policy_to_csv
 import matplotlib.pyplot as plt
 import pyspiel
+import pickle
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('episodes',int(5e6+10),"Number of training episodes")
-flags.DEFINE_string('game',"kuhn_poker","Game to be played by the agents")
+flags.DEFINE_integer('episodes',int(100000),"Number of training episodes")
+flags.DEFINE_string('game',"leduc_poker","Game to be played by the agents")
 
 def dqn_train(unused_arg):
     env = rl_environment.Environment(FLAGS.game)
@@ -76,21 +79,29 @@ def pgrad_train(unused_arg):
     run_agents(sess,env,agents,expl_policies_avg)
 
 def cfr_train(unused_arg):
+    exploit_history = list()
+    exploit_idx = list()
+
     tf.enable_eager_execution()
     game = pyspiel.load_game(FLAGS.game,
                            {"players": pyspiel.GameParameter(2)})
+    agent_name = "cfr"
     cfr_solver = cfr.CFRSolver(game)
-    for i in range(FLAGS.episodes):
+    for ep in range(FLAGS.episodes):
         cfr_solver.evaluate_and_update_policy()
-        if i % 100 == 0:
+        if ep % 100 == 0:
             conv = exploitability.exploitability(game, cfr_solver.average_policy())
-            print("Iteration {} exploitability {}".format(i, conv))
+            exploit_idx.append(ep)
+            exploit_history.append(conv)
+            print("Iteration {} exploitability {}".format(ep, conv))
     
+    pickle.dump([exploit_idx,exploit_history],open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+
     now = datetime.now()
     policy = cfr_solver.average_policy()
     agent_name = "cfr"
     for pid in [1,2]:
-        policy_to_csv(game, policy, f"policies/test_p_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+".csv")
+        policy_to_csv(game, policy, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(ep)+"episodes.csv")
 
 
 def neurd_train(unudes_arg):
@@ -121,18 +132,18 @@ def neurd_train(unudes_arg):
             autoencoder_loss=(None))
 
     exploit_history = list()
-    for i in range(FLAGS.episodes):
+    for ep in range(FLAGS.episodes):
         solver.evaluate_and_update_policy(_train)
-        if i % 100 == 0:
+        if ep % 100 == 0:
             conv = pyspiel.exploitability(game, solver.average_policy())
             exploit_history.append(conv)
-            print("Iteration {} exploitability {}".format(i, conv))
+            print("Iteration {} exploitability {}".format(ep, conv))
         
     now = datetime.now()
-    policy = PolicyFromDict(solver.current_policy())
+    policy = solver.average_policy()
     agent_name = "neurd"
-    for pid, agent in enumerate(models):
-        policy_to_csv(game, policy, f"policies/test_p_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+".csv")
+    for pid in [1,2]:
+        policy_to_csv(game, policy, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(ep)+"episodes.csv")
 
     plt.plot([i for i in range(len(exploit_history))],exploit_history)
     plt.ylim(0.01,1)
@@ -148,10 +159,12 @@ def run_agents(sess, env, agents, expl_policies_avg):
     agent_name = "nfsp"
     write_policy_at = [1e4,1e5,1e6,3e6,5e6]
     sess.run(tf.global_variables_initializer())
+    exploit_idx = list()
     exploit_history = list()
     for ep in range(FLAGS.episodes):
         if (ep + 1) % 10000 == 0:
             expl = exploitability.exploitability(env.game, expl_policies_avg)
+            exploit_idx.append(ep)
             exploit_history.append(expl)
             with open("exploitabilities.txt","a") as f:
                 f.write(str(expl)+"\n")
@@ -175,11 +188,14 @@ def run_agents(sess, env, agents, expl_policies_avg):
         for agent in agents:
             agent.step(time_step)
 
+
+    pickle.dump([exploit_idx,exploit_history],open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+
     now = datetime.now()
     for pid, agent in enumerate(agents):
         policy_to_csv(env.game, expl_policies_avg, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(ep)+"episodes.csv")
 
-   
+    
     plt.plot([i for i in range(len(exploit_history))],exploit_history)
     plt.ylim(0.01,1)
     plt.yticks([1,0.1,0.01])
@@ -189,4 +205,4 @@ def run_agents(sess, env, agents, expl_policies_avg):
 
 
 if __name__ == "__main__":
-    app.run(nfsp_train)
+    app.run(cfr_train)
