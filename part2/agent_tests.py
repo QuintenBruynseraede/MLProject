@@ -8,7 +8,7 @@ from open_spiel.python.algorithms import policy_gradient
 from open_spiel.python.algorithms import nfsp,dqn,cfr,neurd,rcfr
 from open_spiel.python.egt.examples import alpharank_example
 from open_spiel.python.egt import alpharank
-from agent_policies import NFSPPolicies,QLearnerPolicies,DQNPolicies,PolicyGradientPolicies
+from agent_policies import NFSPPolicies,QLearnerPolicies,DQNPolicies,PolicyGradientPolicies, PolicyFromDict
 from tournament import policy_to_csv
 import matplotlib.pyplot as plt
 import pyspiel
@@ -131,7 +131,7 @@ def rcfr_train(unused_arg):
     agent_name = "rcfr"
     for iteration in range(FLAGS.episodes):
         if (iteration+1) % 10 == 0:
-            conv = exploitability.exploitability(game, patient.average_policy())
+            conv = pyspiel.exploitability(game, patient.average_policy())
             exploit_idx.append(iteration)
             exploit_history.append(conv)
             print("[RCFR] Iteration {} exploitability {}".format(iteration, conv))
