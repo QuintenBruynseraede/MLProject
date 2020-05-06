@@ -17,7 +17,7 @@ import pickle
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer('episodes',int(100000),"Number of training episodes")
-flags.DEFINE_string('game',"leduc_poker","Game to be played by the agents")
+flags.DEFINE_string('game',"kuhn_poker","Game to be played by the agents")
 
 def dqn_train(unused_arg):
     env = rl_environment.Environment(FLAGS.game)
@@ -110,7 +110,7 @@ def rcfr_train(unused_arg):
     models = [rcfr.DeepRcfrModel(
       game,
       num_hidden_layers=1,
-      num_hidden_units=13,
+      num_hidden_units=64 if FLAGS.game == "leduc_poker" else 13,
       num_hidden_factors=1,
       use_skip_connections=True) for _ in range(game.num_players())]
     patient = rcfr.RcfrSolver(
@@ -130,7 +130,7 @@ def rcfr_train(unused_arg):
 
     agent_name = "rcfr"
     for iteration in range(FLAGS.episodes):
-        if (iteration+1) % 10 == 0:
+        if (iteration % 100) == 0:
             conv = pyspiel.exploitability(game, patient.average_policy())
             exploit_idx.append(iteration)
             exploit_history.append(conv)
