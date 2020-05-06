@@ -27,23 +27,28 @@ Another metric that is often used, is \textbf{exploitability}. For two-player ze
 Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). It should also be noted that convergence toward Nash equilibria is a property of individual algorithms, and is not guaranteed.
 
 \subsection{Algorithm 1: Fictitious Self-Play}
-In this algorithm the agent plays against itself and tries to improve its strategy by exploiting its own weaknesses. The variant of this algorithm implemented in Open Spiel is the Extensive-Form Fictitious Self-Play algorithm (XFP). In this algorithm the agent performs two steps at every iteration \citep{fsp-ext}. In the first step, the best response to the current policy $\pi$ is generated, in the second step the policy is updated based on the best response.\\
-To find the best reponse to the current strategy, the game state tree is traverse and the set of best responsed is calculated. Out of this set, a best reponse is selected. As the agent plays against itself, the game state tree is known as the probabilities for all actions in all states are known.\\
-The seconds step is to update the average policy by using the calculated best response. The update rule is the following:
+Fictious play is a classic algorithm introduced by \cite{fp}. It's goal is to find the optimal strategy or Nash equilibrium for imperfect games in normal form \cite{MCFSP}. The algorithm is based on the fictitous play of the game, which corresponds to a player simulating a game in it's head and choosing the best response for the current situation. In this simulation, the player assumes the opponent always chooses the best response.
+
+We concretise this idea by explainin the Extensive Fictious Play algorithm, as stated in \cite{fsp-ext}. The algorithm consisists of two steps: finding the best response for the current state, and updating the current average strategy of the agent.
+To find the best reponse for the curren state, the game state tree is traversed and the set of best responses is calculated based on the final outcome. Out of this set, a best reponse is selected.
+The seconds step is to update the average policy by using the calculated best response. The update rule for the policy is the following:
 \begin{math}
 \pi_{i+1}(u) = \pi_{i}(u) + \frac{\alpha_{i+1}x_{\beta_{i+1}}(\sigma_{u})(\beta_{i+1}(u) - \pi_i(u))}{(1-\alpha_{i+1})x_{\pi_i}(\sigma_{u}) + \alpha_{i+1}x_{\beta_{i+1}}(\sigma_u)}
 \end{math}.\\
 Where $\pi_n(u)$ indicates the action probabilities of the policy at iteration $n$, $\beta_n$ the best reponse calcuated in step 1 and $\sigma{u}$ a sequence of actions to reach state $u$. $x{\beta}(\sigma_u)$ is the realization plan for this sequence, given best response $\beta$.\\
-The main issue with this form of fictitous self-play is the computational effort needed to calculate the best response. Therefore, many extensions and variations exist to effeciently calculate this best response and update the policy. As \cite{fsp-ext} points out, the FSP framework consists of machine learning approches to compute both the best response, as well as update the policy. 
-In the next section, this is done by using a neural network.
+The main issue with this form of fictitous play is the computational effort needed to calculate the best response. 
+Reinforcement learning can address this problem by using machine learning techniques to approximate the optimal response.
+The reinforcement techniques plug in in a framework called FSP or Fictious Self Play. Here, both calculation of the best response and the update of the policy can be substitued by reinforcement learning methods.
+
 \subsubsection{Extension: Neural Fictitious Self-Play}
-In the NFSP algorithm, the steps described above are approximated by using two neural networks.
+In the NFSP algorithm, the best response and update rule are approximated by training two neural networks.
 \paragraph{Best response}
-As stated in the previous section, the FSP framework consists of two steps, the first of which is calculating the best response for a given state. In the NFSP setting this step is done by training a Deep Q-network or DQN. This agent learns an $\epsilon$-greedy policy \cite{heinrichphd}. This can be done as the games considered have perfect recall and the history of the game is thus available to the agents. By using this history the agent gains experience and approximates the best response for a given state.
-The implementation of NFSP in OpenSpiel uses a multilayer perceptron network (MLP).
+To calculate the best response, we train a Deep Q-network or DQN. This agent learns an $\epsilon$-greedy policy \cite{heinrichphd}. 
+This can be done as the games considered have perfect recall and the history of the game is thus available to the agents. By using this history the agent gains experience and approximates the best response for a given state.
+The implementation of NFSP in Openspiel uses a multilayer perceptron network (MLP).
 \paragraph{Average Strategy}
-To compute the action probabilities for a given state in the game, NFSP trains another ANN which maps these state to the corresponding probabilities. This network is trained by using information of past actions performed. As the average policy is approximated, the network does not need to be consulted every iteration of the learning process. This means the update can be much more effecient when using a good ANN.
-In the OpenSpiel implementation of NFSP this is an MLP.
+To compute the action probabilities for a given state in the game, NFSP trains another ANN which maps these states to the corresponding probabilities. The network is trained by using information of past actions performed. As the average policy is approximated, the network does not need to be consulted every iteration of the learning process. This means the update can be much more effecient when using a good ANN.
+In the Openspiel implementation of NFSP this is an MLP.
 \subsection{Algorithm 2: Counterfactual Regret Minimization}
 Counterfactual Regret Minimization (CFR in short) is an algorithm that is designed to find Nash equilibria in large games. It introduces the notion of counterfactual regret, and minimizes this to compute a Nash Equilibrium. \citeauthor{cfr} \citep{cfr} show that CFR can solve games with up to $10^{12}$ states, such as Texas Hold'em. We therefore expect it to perform well on reduced variants of traditional poker, such as Kuhn and Leduc poker.\\
 
