@@ -5,7 +5,7 @@ from open_spiel.python import policy
 from open_spiel.python import rl_environment
 from open_spiel.python.algorithms import exploitability
 from open_spiel.python.algorithms import policy_gradient
-from open_spiel.python.algorithms import nfsp,dqn,cfr,neurd
+from open_spiel.python.algorithms import nfsp,dqn,cfr,neurd,rcfr
 from open_spiel.python.egt.examples import alpharank_example
 from open_spiel.python.egt import alpharank
 from agent_policies import NFSPPolicies,QLearnerPolicies,DQNPolicies,PolicyGradientPolicies
@@ -102,6 +102,49 @@ def cfr_train(unused_arg):
     agent_name = "cfr"
     for pid in [1,2]:
         policy_to_csv(game, policy, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(ep)+"episodes.csv")
+
+def rcfr_train(unused_arg):
+    tf.enable_eager_execution()
+    game = pyspiel.load_game(FLAGS.game,
+            {"players": pyspiel.GameParameter(2)})
+    models = [rcfr.DeepRcfrModel(
+      game,
+      num_hidden_layers=1,
+      num_hidden_units=13,
+      num_hidden_factors=1,
+      use_skip_connections=True) for _ in range(game.num_players())]
+    patient = rcfr.RcfrSolver(
+        game, models, False, True)
+    exploit_history = list()
+    exploit_idx = list()
+
+    def _train(model, data):
+        data = data.shuffle(1000)
+        data = data.batch(12)
+        #data = data.repeat(1)  
+        optimizer = tf.keras.optimizers.Adam(lr=0.005, amsgrad=True)    
+        for x, y in data:
+            optimizer.minimize(
+                lambda: tf.losses.huber_loss(y, model(x)),  # pylint: disable=cell-var-from-loop
+                model.trainable_variables)
+
+    agent_name = "rcfr"
+    for iteration in range(FLAGS.episodes):
+        if (iteration+1) % 10 == 0:
+            conv = exploitability.exploitability(game, patient.average_policy())
+            exploit_idx.append(iteration)
+            exploit_history.append(conv)
+            print("[RCFR] Iteration {} exploitability {}".format(iteration, conv))
+        patient.evaluate_and_update_policy(_train)
+
+
+    pickle.dump([exploit_idx,exploit_history],open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+
+    now = datetime.now()
+    policy = patient.average_policy()
+
+    for pid in [1,2]:
+        policy_to_csv(game, policy, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(FLAGS.episodes)+"episodes.csv")
 
 
 def neurd_train(unudes_arg):
@@ -205,4 +248,4 @@ def run_agents(sess, env, agents, expl_policies_avg):
 
 
 if __name__ == "__main__":
-    app.run(cfr_train)
+    app.run(rcfr_train)
