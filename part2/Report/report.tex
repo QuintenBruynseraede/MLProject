@@ -95,9 +95,13 @@ In this equation, $A(I)$ denotes the set of actions that can be taken in informa
 It should be noted that the average strategy converges to a Nash equilibrium, and not the final strategy. When discussing results of policies obtained using CFR, it is implicitly assumed we have extracted the average policy after training.
 
 \subsubsection{Extension: Regression Counterfactual Regret Minimization}
-Regression CFR (introduced by \citeauthor{regression_cfr} \citep{regression_cfr}) is an extension of CFR where counterfactual regret values are not stored in a tabular format, but estimated using a function $\phi: I \times A \mapsto \mathbb{R}$.\\
+Regression CFR (introduced by \citeauthor{regression_cfr} \citep{regression_cfr}) is an extension of CFR where counterfactual regret values are not stored in a tabular format, but estimated using a function $\phi: I \times A \mapsto \mathbb{R}$., that maps each combination of a (visible) information state and an action to an estimation of the counterfactual regret value.\\
 
-One interesting property of using regression CFR (RCFR) is the fact that a game can be abstracted down using a appropriate regressor. Consider a game like Texas Hold'em Poker, with roughly $10^{160}$ possible sequences. Storing all counterfactual regret values quickly becomes impossible. A solution is to assign regret values to clusters and estimate a representative for each cluster. This might reduce the number of values to a manageable size. In RCFR, this clustering is done implicitly when choosing a regressor: a simple model such as bounded regression trees will learn rough abstractions, whereas a neural netwerk may not add any abstraction at all. Furthermore, RCFR is able to adapt the regressor $\phi$ on the fly, increasing or decreasing abstraction as needed.
+One interesting property of using regression CFR (RCFR) is the fact that a game can be abstracted down using a appropriate regressor. Consider a game like Texas Hold'em Poker, with roughly $10^{160}$ possible sequences. Storing all counterfactual regret values quickly becomes impossible. A solution is to assign regret values to clusters and estimate a representative for each cluster. This might reduce the number of values to a manageable size. In RCFR, this clustering is done implicitly when choosing a regressor: a simple model such as bounded regression trees will learn rough abstractions, whereas a neural netwerk may not add any abstraction at all. Furthermore, RCFR is able to adapt the regressor $\phi$ on the fly, increasing or decreasing abstraction as needed.\\
+
+As such, we note that using RCFR instead of regular CFR should be used as a technique to make learning more tractable, and not to decrease exploitability. Therefore, the goal should be to approximate the exploitability reached by CFR, but with a reduced number of states.
+
+OpenSpiel supports using RCFR with a user-defined regressor. We chose to use a feedforward neural network of one hidden dense layer containing 13 nodes.
 \subsubsection{Extension: Counterfactual Regret Minimization against best responder}
 \subsubsection{Extension: Deep Counterfactual Regret Minimization}
 
