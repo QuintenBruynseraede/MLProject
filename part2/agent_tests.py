@@ -5,7 +5,7 @@ from open_spiel.python import policy
 from open_spiel.python import rl_environment
 from open_spiel.python.algorithms import exploitability
 from open_spiel.python.algorithms import policy_gradient
-from open_spiel.python.algorithms import nfsp,dqn,cfr,neurd,rcfr
+from open_spiel.python.algorithms import nfsp,dqn,cfr,neurd,rcfr, fictitious_play
 from open_spiel.python.egt.examples import alpharank_example
 from open_spiel.python.egt import alpharank
 from agent_policies import NFSPPolicies,QLearnerPolicies,DQNPolicies,PolicyGradientPolicies, PolicyFromDict
@@ -87,13 +87,16 @@ def cfr_train(unused_arg):
                            {"players": pyspiel.GameParameter(2)})
     agent_name = "cfr"
     cfr_solver = cfr.CFRSolver(game)
+    checkpoint = datetime.now()
     for ep in range(FLAGS.episodes):
         cfr_solver.evaluate_and_update_policy()
         if ep % 100 == 0:
+            delta = datetime.now() - checkpoint
             conv = exploitability.exploitability(game, cfr_solver.average_policy())
             exploit_idx.append(ep)
             exploit_history.append(conv)
-            print("Iteration {} exploitability {}".format(ep, conv))
+            print("Iteration {} exploitability {} - {} seconds since last checkpoint".format(ep, conv,delta.seconds))
+            checkpoint = datetime.now()
     
     pickle.dump([exploit_idx,exploit_history],open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
 
@@ -102,6 +105,34 @@ def cfr_train(unused_arg):
     agent_name = "cfr"
     for pid in [1,2]:
         policy_to_csv(game, policy, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(ep)+"episodes.csv")
+
+def xfsp_train(_):
+    exploit_history = list()
+    exploit_idx = list()
+    game = pyspiel.load_game(FLAGS.game,{"players": pyspiel.GameParameter(2)})
+    fsp_solver = fictitious_play.XFPSolver(game)
+    checkpoint = datetime.now()
+    for ep in range(FLAGS.episodes):
+        if (ep % 1000) == 0:
+            delta = datetime.now() - checkpoint
+            pol = policy.PolicyFromCallable(game, fsp_solver.average_policy_callable())
+            conv = exploitability.exploitability(game,pol)
+            exploit_history.append(conv)
+            exploit_idx.append(ep)
+            print("[XFSP] Iteration {} exploitability {} - {} seconds since last checkpoint".format(ep, conv,delta.seconds))
+            checkpoint = datetime.now()
+
+
+        fsp_solver.iteration()
+
+    agent_name = "xfsp"
+    pickle.dump([exploit_idx,exploit_history],open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+
+    pol = policy.PolicyFromCallable(game, fsp_solver.average_policy_callable())
+    for pid in [1,2]:
+        policy_to_csv(game, pol, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(FLAGS.episodes)+"episodes.csv")
+
+
 
 def rcfr_train(unused_arg):
     tf.enable_eager_execution()
@@ -129,12 +160,15 @@ def rcfr_train(unused_arg):
                 model.trainable_variables)
 
     agent_name = "rcfr"
+    checkpoint = datetime.now()
     for iteration in range(FLAGS.episodes):
         if (iteration % 100) == 0:
+            delta = datetime.now() - checkpoint
             conv = pyspiel.exploitability(game, patient.average_policy())
             exploit_idx.append(iteration)
             exploit_history.append(conv)
-            print("[RCFR] Iteration {} exploitability {}".format(iteration, conv))
+            print("[RCFR] Iteration {} exploitability {} - {} seconds since last checkpoint".format(iteration, conv,delta.seconds))
+            checkpoint = datetime.now()
         patient.evaluate_and_update_policy(_train)
 
 
@@ -222,7 +256,7 @@ def run_agents(sess, env, agents, expl_policies_avg):
 
         time_step = env.reset()
         while not time_step.last():
-            player_id = time_step.observations["current_player"]
+            player_id = time_stcfr_trainep.observations["current_player"]
             agent_output = agents[player_id].step(time_step)
             action_list = [agent_output.action]
             time_step = env.step(action_list)
@@ -248,4 +282,4 @@ def run_agents(sess, env, agents, expl_policies_avg):
 
 
 if __name__ == "__main__":
-    app.run(rcfr_train)
+    app.run(xfsp_train)
