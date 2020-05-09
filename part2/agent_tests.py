@@ -13,10 +13,13 @@ from tournament import policy_to_csv
 import matplotlib.pyplot as plt
 import pyspiel
 import pickle
+from deepcfr_solver_modified import DeepCFRSolverModified
+import numpy as np
+import os
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('episodes',int(100000),"Number of training episodes")
+flags.DEFINE_integer('episodes',int(1e5),"Number of training episodes")
 flags.DEFINE_string('game',"kuhn_poker","Game to be played by the agents")
 
 def dqn_train(unused_arg):
@@ -132,8 +135,6 @@ def xfsp_train(_):
     for pid in [1,2]:
         policy_to_csv(game, pol, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(FLAGS.episodes)+"episodes.csv")
 
-
-
 def rcfr_train(unused_arg):
     tf.enable_eager_execution()
     game = pyspiel.load_game(FLAGS.game,
@@ -179,7 +180,6 @@ def rcfr_train(unused_arg):
 
     for pid in [1,2]:
         policy_to_csv(game, policy, f"policies/policy_"+now.strftime("%m-%d-%Y_%H-%M")+"_"+agent_name+"_"+str(pid+1)+"_+"+str(FLAGS.episodes)+"episodes.csv")
-
 
 def neurd_train(unudes_arg):
     tf.enable_eager_execution()
@@ -230,6 +230,37 @@ def neurd_train(unudes_arg):
     plt.show()
 
 
+def train_dcfr(_):
+  np.random.seed(0)
+  game = pyspiel.load_game(FLAGS.game)
+
+  os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+  num_traversals = 5
+  with tf.Session() as sess:
+    deep_cfr_solver = DeepCFRSolverModified(
+        sess,
+        game,
+        policy_network_layers=(64, 64) if FLAGS.game == "leduc_poker" else (32,32),
+        advantage_network_layers=(32, 32) if FLAGS.game == "leduc_poker" else (16,16),
+        num_iterations= FLAGS.episodes,
+        num_traversals=num_traversals,
+        learning_rate=1e-3,
+        batch_size_advantage=int(1e5),
+        batch_size_strategy=int(1e5),
+        memory_capacity=int(5e5),
+        eval_frequency = 100)
+    sess.run(tf.global_variables_initializer())
+    deep_cfr_solver.solve()
+
+    exploit_idx, exploit_history = deep_cfr_solver.get_exploitabilities_from_memories(sess)
+    agent_name = "dcfr"
+    pickle.dump([exploit_idx,exploit_history],open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+
+    plt.plot(exploit_idx, exploit_history)
+    plt.xscale("log")
+    plt.yscale("log")
+    plt.show()
 
 
 def run_agents(sess, env, agents, expl_policies_avg):
@@ -282,4 +313,4 @@ def run_agents(sess, env, agents, expl_policies_avg):
 
 
 if __name__ == "__main__":
-    app.run(xfsp_train)
+    app.run(train_dcfr)
