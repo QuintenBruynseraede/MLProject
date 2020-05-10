@@ -24,7 +24,7 @@ From this initial notion of policy evaluation, the \textbf{NashConv} metric is d
 
 Another metric that is often used, is \textbf{exploitability}. For two-player zero-sum games (such as the games we will be learning in this assignment), exploitability equals $\frac{NashConv}{2}$. We therefore only use Exploitability to evaluate our policies (as NashConv can be derived from Exploitability in this case).
 
-Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). It should also be noted that convergence toward Nash equilibria is a property of individual algorithms, and is not guaranteed.
+Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). 
 
 \subsection{Algorithm 1: Fictitious Self-Play}
 Fictious play is a classic algorithm introduced by \cite{fp}. It's goal is to find the optimal strategy or Nash equilibrium for imperfect games in normal form \cite{MCFSP}. The algorithm is based on the fictitous play of the game, which corresponds to a player simulating a game in it's head and choosing the best response for the current situation. In this simulation, the player assumes the opponent always chooses the best response.
