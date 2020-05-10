@@ -248,12 +248,11 @@ def train_dcfr(_):
         learning_rate=1e-3,
         batch_size_advantage=int(1e5),
         batch_size_strategy=int(1e5),
-        memory_capacity=int(5e5),
+        memory_capacity=int(5e4),
         eval_frequency = 100)
     sess.run(tf.global_variables_initializer())
-    deep_cfr_solver.solve()
+    _ , _ , _ , exploit_idx, exploit_history = deep_cfr_solver.solve()
 
-    exploit_idx, exploit_history = deep_cfr_solver.get_exploitabilities_from_memories(sess)
     agent_name = "dcfr"
     pickle.dump([exploit_idx,exploit_history],open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
 

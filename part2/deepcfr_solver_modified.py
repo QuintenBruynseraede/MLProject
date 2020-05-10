@@ -193,7 +193,7 @@ class DeepCFRSolverModified(policy.Policy):
               name="advantage_ph_" + str(p)))
 
     # Define strategy network, loss & memory.
-    self._strategy_memories = [FixedSizeRingBuffer(memory_capacity)]
+    self._strategy_memories = FixedSizeRingBuffer(memory_capacity)
     self._policy_network = snt.nets.MLP(
         list(policy_network_layers) + [self._num_actions])
     action_logits = self._policy_network(self._info_state_ph)
@@ -240,7 +240,7 @@ class DeepCFRSolverModified(policy.Policy):
 
   @property
   def strategy_buffer(self):
-    return self._strategy_memories[-1]
+    return self._strategy_memories
 
   def clear_advantage_buffers(self):
     for p in range(self._num_players):
@@ -255,13 +255,16 @@ class DeepCFRSolverModified(policy.Policy):
     """Solution logic for Deep CFR."""
     advantage_losses = collections.defaultdict(list)
     start = datetime.now()
+    expl_idx = []
+    expl_hist = []
     for it in range(self._num_iterations):
       if (it % self._eval_freq == 0) and it != 0:
-            self._strategy_memories.append(deepcopy(self._strategy_memories[-1]))
-            elapsed = datetime.now() - start
-            print("Episode {}/{}, running for {} seconds - mem_size = {}".format(it, 
-                                                                    self._num_iterations,elapsed.seconds,
-                                                                    len(self.strategy_buffer)))
+        conv = self.get_exploitabilitiy()
+        elapsed = datetime.now() - start
+        print("Episode {}/{}, running for {} seconds - Exploitability = {}".format(it, 
+                                                                self._num_iterations,elapsed.seconds,conv))
+        expl_idx.append(it)
+        expl_hist.append(conv)
       for p in range(self._num_players):
         for _ in range(self._num_traversals):
           self._traverse_game_tree(self._root_node, p)
@@ -274,7 +277,7 @@ class DeepCFRSolverModified(policy.Policy):
 
     conv = exploitability.exploitability(self._game, policy.PolicyFromCallable(self._game, self.action_probabilities))
     print("Final exploitability: {}".format(conv))
-    return self._policy_network, advantage_losses, policy_loss
+    return self._policy_network, advantage_losses, policy_loss, expl_idx, expl_hist
 
   def _traverse_game_tree(self, state, player):
     """Performs a traversal of the game tree.
@@ -319,7 +322,7 @@ class DeepCFRSolverModified(policy.Policy):
       probs = np.array(strategy)
       probs /= probs.sum()
       sampled_action = np.random.choice(range(self._num_actions), p=probs)
-      self._strategy_memories[-1].add(
+      self._strategy_memories.add(
           StrategyMemory(
               state.information_state_tensor(other_player), self._iteration,
               strategy))
@@ -405,9 +408,9 @@ class DeepCFRSolverModified(policy.Policy):
       The average loss obtained on this batch of transitions or `None`.
     """
     if self._batch_size_strategy:
-      samples = self._strategy_memories[-1].sample(self._batch_size_strategy)
+      samples = self._strategy_memories.sample(self._batch_size_strategy)
     else:
-      samples = self._strategy_memories[-1]
+      samples = self._strategy_memories
     info_states = []
     action_probs = []
     iterations = []
@@ -425,69 +428,126 @@ class DeepCFRSolverModified(policy.Policy):
     return loss_strategy
 
 
-  def get_exploitabilities_from_memories(self,sess):
+  # def get_exploitabilities_from_memories(self,sess):
 
-      #Define placeholders
-      iter_ph = tf.placeholder(
-        shape=[None, 1], dtype=tf.float32, name="iter_ph")
-      action_probs_ph = tf.placeholder(
-        shape=[None, self._num_actions],
-        dtype=tf.float32,
-        name="action_probs_ph")
-      info_state_ph = tf.placeholder(
-        shape=[None, self._embedding_size],
-        dtype=tf.float32,
-        name="info_state_ph")
+  #     #Define placeholders
+  #     iter_ph = tf.placeholder(
+  #       shape=[None, 1], dtype=tf.float32, name="iter_ph")
+  #     action_probs_ph = tf.placeholder(
+  #       shape=[None, self._num_actions],
+  #       dtype=tf.float32,
+  #       name="action_probs_ph")
+  #     info_state_ph = tf.placeholder(
+  #       shape=[None, self._embedding_size],
+  #       dtype=tf.float32,
+  #       name="info_state_ph")
 
 
-      policy_network = snt.nets.MLP(
-        list(self._policy_network_layers) + [self._num_actions])
-      action_logits = policy_network(info_state_ph)
-      # Illegal actions are handled in the traversal code where expected payoff
-      # and sampled regret is computed from the advantage networks.
-      action_probs = tf.nn.softmax(action_logits)
-      loss_policy = tf.reduce_mean(
-          tf.losses.mean_squared_error(
-              labels=tf.math.sqrt(iter_ph) * action_probs_ph,
-              predictions=tf.math.sqrt(iter_ph) * action_probs))
-      optimizer_policy = tf.train.AdamOptimizer(learning_rate=self._learning_rate)
-      learn_step_policy = optimizer_policy.minimize(loss_policy)
+  #     policy_network = snt.nets.MLP(
+  #       list(self._policy_network_layers) + [self._num_actions])
+  #     action_logits = policy_network(info_state_ph)
+  #     # Illegal actions are handled in the traversal code where expected payoff
+  #     # and sampled regret is computed from the advantage networks.
+  #     action_probs = tf.nn.softmax(action_logits)
+  #     loss_policy = tf.reduce_mean(
+  #         tf.losses.mean_squared_error(
+  #             labels=tf.math.sqrt(iter_ph) * action_probs_ph,
+  #             predictions=tf.math.sqrt(iter_ph) * action_probs))
+  #     optimizer_policy = tf.train.AdamOptimizer(learning_rate=self._learning_rate)
+  #     learn_step_policy = optimizer_policy.minimize(loss_policy)
       
-      sess.run(tf.global_variables_initializer())
+  #     sess.run(tf.global_variables_initializer())
 
-      def _local_action_probabilities(state):
-        """Returns action probabilities dict for a single batch."""
-        cur_player = state.current_player()
-        legal_actions = state.legal_actions(cur_player)
-        info_state_vector = np.array(state.information_state_tensor())
-        if len(info_state_vector.shape) == 1:
-          info_state_vector = np.expand_dims(info_state_vector, axis=0)
-        probs = sess.run(
-            action_probs, feed_dict={info_state_ph: info_state_vector})
-        return {action: probs[0][action] for action in legal_actions}
-
-
-      expl_hist = list()
-      for samples in self._strategy_memories:
-        info_states_l = []
-        action_probs_l = []
-        iterations_l = []
-        for s in samples.sample(self._batch_size_strategy):
-          info_states_l.append(s.info_state)
-          action_probs_l.append(s.strategy_action_probs)
-          iterations_l.append([s.iteration])
-        sess.run(
-        [loss_policy, learn_step_policy],
-        feed_dict={
-            info_state_ph: np.array(info_states_l),
-            action_probs_ph: np.array(np.squeeze(action_probs_l)),
-            iter_ph: np.array(iterations_l),
-        })
-
-        conv = exploitability.exploitability(self._game, policy.PolicyFromCallable(self._game,_local_action_probabilities))
-        expl_hist.append(conv)
-      expl_idx = list(range(self._eval_freq, self._num_iterations+1, self._eval_freq))
+  #     def _local_action_probabilities(state):
+  #       """Returns action probabilities dict for a single batch."""
+  #       cur_player = state.current_player()
+  #       legal_actions = state.legal_actions(cur_player)
+  #       info_state_vector = np.array(state.information_state_tensor())
+  #       if len(info_state_vector.shape) == 1:
+  #         info_state_vector = np.expand_dims(info_state_vector, axis=0)
+  #       probs = sess.run(
+  #           action_probs, feed_dict={info_state_ph: info_state_vector})
+  #       return {action: probs[0][action] for action in legal_actions}
 
 
-      return expl_idx,expl_hist
+  #     expl_hist = list()
+  #     for samples in self._strategy_memories:
+  #       info_states_l = []
+  #       action_probs_l = []
+  #       iterations_l = []
+  #       for s in samples.sample(self._batch_size_strategy):
+  #         info_states_l.append(s.info_state)
+  #         action_probs_l.append(s.strategy_action_probs)
+  #         iterations_l.append([s.iteration])
+  #       sess.run(
+  #       [loss_policy, learn_step_policy],
+  #       feed_dict={
+  #           info_state_ph: np.array(info_states_l),
+  #           action_probs_ph: np.array(np.squeeze(action_probs_l)),
+  #           iter_ph: np.array(iterations_l),
+  #       })
 
+  #       conv = exploitability.exploitability(self._game, policy.PolicyFromCallable(self._game,_local_action_probabilities))
+  #       expl_hist.append(conv)
+  #     expl_idx = list(range(self._eval_freq, self._num_iterations+1, self._eval_freq))
+
+
+  #     return expl_idx,expl_hist
+
+  def get_exploitabilitiy(self):
+    #Define placeholders
+    iter_ph = tf.placeholder(
+      shape=[None, 1], dtype=tf.float32, name="iter_ph")
+    action_probs_ph = tf.placeholder(
+      shape=[None, self._num_actions],
+      dtype=tf.float32,
+      name="action_probs_ph")
+    info_state_ph = tf.placeholder(
+      shape=[None, self._embedding_size],
+      dtype=tf.float32,
+      name="info_state_ph")
+
+
+    policy_network = snt.nets.MLP(
+      list(self._policy_network_layers) + [self._num_actions])
+    action_logits = policy_network(info_state_ph)
+    # Illegal actions are handled in the traversal code where expected payoff
+    # and sampled regret is computed from the advantage networks.
+    action_probs = tf.nn.softmax(action_logits)
+    loss_policy = tf.reduce_mean(
+        tf.losses.mean_squared_error(
+            labels=tf.math.sqrt(iter_ph) * action_probs_ph,
+            predictions=tf.math.sqrt(iter_ph) * action_probs))
+    optimizer_policy = tf.train.AdamOptimizer(learning_rate=self._learning_rate)
+    learn_step_policy = optimizer_policy.minimize(loss_policy)
+    
+    self._session.run(tf.global_variables_initializer())
+
+    def _local_action_probabilities(state):
+      """Returns action probabilities dict for a single batch."""
+      cur_player = state.current_player()
+      legal_actions = state.legal_actions(cur_player)
+      info_state_vector = np.array(state.information_state_tensor())
+      if len(info_state_vector.shape) == 1:
+        info_state_vector = np.expand_dims(info_state_vector, axis=0)
+      probs = self._session.run(
+          action_probs, feed_dict={info_state_ph: info_state_vector})
+      return {action: probs[0][action] for action in legal_actions}
+
+    info_states_l = []
+    action_probs_l = []
+    iterations_l = []
+    for s in self._strategy_memories.sample(self._batch_size_strategy):
+      info_states_l.append(s.info_state)
+      action_probs_l.append(s.strategy_action_probs)
+      iterations_l.append([s.iteration])
+    self._session.run(
+      [loss_policy, learn_step_policy],
+      feed_dict={
+          info_state_ph: np.array(info_states_l),
+          action_probs_ph: np.array(np.squeeze(action_probs_l)),
+          iter_ph: np.array(iterations_l),
+      })
+
+    conv = exploitability.exploitability(self._game, policy.PolicyFromCallable(self._game,_local_action_probabilities))
+    return conv
