@@ -24,7 +24,7 @@ From this initial notion of policy evaluation, the \textbf{NashConv} metric is d
 
 Another metric that is often used, is \textbf{exploitability}. For two-player zero-sum games (such as the games we will be learning in this assignment), exploitability equals $\frac{NashConv}{2}$. We therefore only use Exploitability to evaluate our policies (as NashConv can be derived from Exploitability in this case).
 
-Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). It should also be noted that convergence toward Nash equilibria is a property of individual algorithms, and is not guaranteed.
+Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). 
 
 \subsection{Algorithm 1: Fictitious Self-Play}
 Fictious play is a classic algorithm introduced by \cite{fp}. It's goal is to find the optimal strategy or Nash equilibrium for imperfect games in normal form \cite{MCFSP}. The algorithm is based on the fictitous play of the game, which corresponds to a player simulating a game in it's head and choosing the best response for the current situation. In this simulation, the player assumes the opponent always chooses the best response.
@@ -94,6 +94,8 @@ In this equation, $A(I)$ denotes the set of actions that can be taken in informa
 
 It should be noted that the average strategy converges to a Nash equilibrium, and not the final strategy. When discussing results of policies obtained using CFR, it is implicitly assumed we have extracted the average policy after training.
 
+Most succesful approaches to learning large imperfect-information games (such as Kuhn Poker and Leduc Poker) are based on CFR. We will now take a closer look at two variants of classical CFR, that try to overcome the limitations of strictly tabular approach. When the number of states is very large, it becomes increasingly infeasible to calculate counterfactual regret values for each and every information state. To solve this, abstraction is often introduced: aggregating information states to reduce the size of the game. Regression CFR applies the principle of abstraction. Deep CFR uses a deep learning to approximate CFR, without using abstraction.\citep{dcfr}
+
 \subsubsection{Extension: Regression Counterfactual Regret Minimization}
 Regression CFR (introduced by \citeauthor{regression_cfr} \citep{regression_cfr}) is an extension of CFR where counterfactual regret values are not stored in a tabular format, but estimated using a function $\phi: I \times A \mapsto \mathbb{R}$., that maps each combination of a (visible) information state and an action to an estimation of the counterfactual regret value.\\
 
@@ -101,10 +103,14 @@ One interesting property of using regression CFR (RCFR) is the fact that a game 
 
 As such, we note that using RCFR instead of regular CFR should be used as a technique to make learning more tractable, and not to decrease exploitability. Therefore, the goal should be to approximate the exploitability reached by CFR, but with a reduced number of states.
 
-OpenSpiel supports using RCFR with a user-defined regressor. We chose to use a feedforward neural network of one hidden dense layer containing 13 nodes.
-\subsubsection{Extension: Counterfactual Regret Minimization against best responder}
-\subsubsection{Extension: Deep Counterfactual Regret Minimization}
+OpenSpiel supports using RCFR with a user-defined regressor. We chose to use a feedforward neural network. We will examine the results of different network sizes in Section 2 and 3.
 
+\subsubsection{Extension: Deep Counterfactual Regret Minimization}
+Deep Counterfactual Regret Minimization (DCFR) is algorithmically simmilar to RCFR when using a deep learning method to estimate counterfactual regret values. However, when using DCFR, the degree of abstraction (as a result of the chosen regressor) influences how well RCFR approaches CFR. In contract, DCFR is designed to minimize the difference between effective and estimated counterfactual regret values.
+
+DCFR starts by training a value network $V$, where the goal is to train $V$ such that $V^{T}(I,a)$ approximates $R^{T}(I,a)$, the regret that CFR would have produced. In order to achieve this goal, regrets are sampled using Monte Carlo Counterfactual Regret Minimization (MCCFR). \citeauthor{dcfr} show that these samples are an unbiased estimator for CFR regret values.\citep{dcfr}
+
+A separate policy network $\Pi$ is trained to estimate the average policy (which converges to a Nash equilibrium, and should ultimately be the output of the algorithm). This is achieved by keeping a memory of information states that were sampled during previous iterations.
 
 \section{Kuhn Poker}
 \begin{tcolorbox}
