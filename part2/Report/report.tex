@@ -26,10 +26,17 @@ Another metric that is often used, is \textbf{exploitability}. For two-player ze
 
 Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). 
 
+\subsection{Normal form - Extensive form}
+In game theoretic aspects, two forms of representing a game exists: normal form and extensive form. The normal form description of a game can be represented as a payoff matrix. This means every action for every player must be included in the matrix. This makes the representation extremely incovenient for larger games like leduc poker.
+The extstensive form representation of games uses a tree to represent all states of a game. The nodes of this tree represent the descision points in the game for a player. Every branch represents a choice made by a player in the decision point. This representation is much more compact and contains much more information about the course of the game.
+
 \subsection{Algorithm 1: Fictitious Self-Play}
 Fictious play is a classic algorithm introduced by \cite{fp}. It's goal is to find the optimal strategy or Nash equilibrium for imperfect games in normal form \cite{MCFSP}. The algorithm is based on the fictitous play of the game, which corresponds to a player simulating a game in it's head and choosing the best response for the current situation. In this simulation, the player assumes the opponent always chooses the best response.
 
-We concretise this idea by explaining the Extensive Fictious Play algorithm, as stated in \cite{fsp-ext}. The algorithm consisists of two steps: finding the best response for the current state, and updating the current average strategy of the agent.
+This elegant and simple algorithm has proven to be very successful in relatively small games, however, as stated by \cite{fsp-ext}, the algorithm only works with games in normal form. Extensive-form games can be cconverted into normal form games but the number of actions increases exponentially in the number of game sates \cite{fsp-ext}.
+Therefore the Extensive Fictious Play algorithm was developped by \cite{fsp-ext} to support self play for extensive form games.
+
+The algorithm consisists of two steps: finding the best response for the current state, and updating the current average strategy of the agent.
 To find the best reponse for the curren state, the game state tree is traversed and the set of best responses is calculated based on the final outcome. Out of this set, a best reponse is selected.
 The seconds step is to update the average policy by using the calculated best response. The update rule for the policy is the following:
 \begin{math}
@@ -122,6 +129,10 @@ A separate policy network $\Pi$ is trained to estimate the average policy (which
 \item{Can we exploit properties of Kuhn Poker to optimize parameters?}
 \end{itemize}
 \end{tcolorbox}
+
+\subsection{NFSP and XFSP}
+In the following section we discuss results of the NFSP and XFSP algorithm as discribed in \ref{sub:nfsp} and \ref{sub:xfsp}. As a baseline we use the XFSP algorithm as it is the exact interpretation of the Fictious Self Play algorithm. Next, we optimize different parameters of the NFSP algorithm for the games kuhn poker and leduc poker. Lastly we compare the computational effort needed to run both algorithms in different settings.
+
 
 \subsection{CFR and RCFR}
 In this section, the goal is twofold. First, we analyze how Counterfactual Regret Minimization (CFR, as described in \ref{sub:cfr}) performs when learning Kuhn Poker. Next, we examine under which circumstances RCFR (Regression CFR, see \ref{sub:rcfr}) can be used as a viable alternative to CFR.
