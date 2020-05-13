@@ -1,0 +1,223 @@
+@inproceedings{kaisers2011multi,
+  title={Multi-agent learning and the reinforcement gradient},
+  author={Kaisers, Michael and Bloembergen, Daan and Tuyls, Karl},
+  booktitle={European Workshop on Multi-Agent Systems},
+  pages={145--159},
+  year={2011},
+  organization={Springer}
+}
+
+@article{tuyls2018symmetric,
+  title={Symmetric decomposition of asymmetric games},
+  author={Tuyls, Karl and Perolat, Julien and Lanctot, Marc and Ostrovski, Georg and Savani, Rahul and Leibo, Joel Z and Ord, Toby and Graepel, Thore and Legg, Shane},
+  journal={Scientific reports},
+  volume={8},
+  number={1},
+  pages={1--20},
+  year={2018},
+  publisher={Nature Publishing Group}
+}
+
+@article{SANDHOLM1996147,
+title = "Multiagent reinforcement learning in the Iterated Prisoner's Dilemma",
+journal = "Biosystems",
+volume = "37",
+number = "1",
+pages = "147 - 166",
+year = "1996",
+issn = "0303-2647",
+doi = "https://doi.org/10.1016/0303-2647(95)01551-5",
+url = "http://www.sciencedirect.com/science/article/pii/0303264795015515",
+author = "Tuomas W. Sandholm and Robert H. Crites",
+keywords = "Multiagent learning, Reinforcement learning, Machine learning, Prisoner's Dilemma, Recurrent neural network, Exploration"
+}
+
+@misc{lanctot2019openspiel,
+    title={OpenSpiel: A Framework for Reinforcement Learning in Games},
+    author={Marc Lanctot and Edward Lockhart and Jean-Baptiste Lespiau and Vinicius Zambaldi and Satyaki Upadhyay and Julien Pérolat and Sriram Srinivasan and Finbarr Timbers and Karl Tuyls and Shayegan Omidshafiei and Daniel Hennes and Dustin Morrill and Paul Muller and Timo Ewalds and Ryan Faulkner and János Kramár and Bart De Vylder and Brennan Saeta and James Bradbury and David Ding and Sebastian Borgeaud and Matthew Lai and Julian Schrittwieser and Thomas Anthony and Edward Hughes and Ivo Danihelka and Jonah Ryan-Davis},
+    year={2019},
+    eprint={1908.09453},
+    archivePrefix={arXiv},
+    primaryClass={cs.LG}
+}
+
+@article{rlforpd,
+    author = {Harper, Marc AND Knight, Vincent AND Jones, Martin AND Koutsovoulos, Georgios AND Glynatsi, Nikoleta E. AND Campbell, Owen},
+    journal = {PLOS ONE},
+    publisher = {Public Library of Science},
+    title = {Reinforcement learning produces dominant strategies for the Iterated Prisoner’s Dilemma},
+    year = {2017},
+    month = {12},
+    volume = {12},
+    url = {https://doi.org/10.1371/journal.pone.0188046},
+    pages = {1-33},
+    number = {12},
+    doi = {10.1371/journal.pone.0188046}
+}
+
+@Book{mas,
+author = {Yoav Shoham AND Kevin Leyton-Brown},
+title = {Multi-agent systems: Algorithmic, Game-Theoretic,and Logical Foundations},
+year = {2009},
+OPTedition = {1.1},
+}
+
+@phdthesis{phdthesis,
+author = {Bloembergen, Daan},
+year = {2015},
+month = {05},
+pages = {},
+title = {Multi-agent learning dynamics}
+}
+
+@article{Ohtsuki2006TheRE,
+  title={The replicator equation on graphs.},
+  author={Hisashi Ohtsuki and Martin A. Nowak},
+  journal={Journal of theoretical biology},
+  year={2006},
+  volume={243 1},
+  pages={
+          86-97
+        }
+}
+
+@article{bloembergenmaster,
+  title={Analyzing Reinforcement Learning algorithms using Evolutionary Game Theory},
+  author={Daan Bloembergen},
+  journal={Journal of theoretical biology},
+  year={2010}
+}
+
+@article{evoldynamics,
+  title={Evolutionary Dynamics of Multi-Agent Learning:A Survey},
+  author={Daan Bloembergen AND Karl Tuyls AND Daniel Hennes AND Michael Kaisers},
+  journal={Journal of Artificial Intelligence Research},
+  year={2015}
+}
+
+@misc{fsp-ext,
+	title={Fictitious Self-Play in Extensive-Form Games},
+	author={Johannes Heinrich AND Marc Lanctot AND David Silver},
+	year={2016},
+	}
+
+
+@InProceedings{extrepl,
+author="Tuyls, Karl
+and Heytens, Dries
+and Nowe, Ann
+and Manderick, Bernard",
+editor="Lavra{\v{c}}, Nada
+and Gamberger, Dragan
+and Blockeel, Hendrik
+and Todorovski, Ljup{\v{c}}o",
+title="Extended Replicator Dynamics as a Key to Reinforcement Learning in Multi-agent Systems",
+booktitle="Machine Learning: ECML 2003",
+year="2003",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="421--431"
+}
+
+@misc{dulacarnold2015deep,
+    title={Deep Reinforcement Learning in Large Discrete Action Spaces},
+    author={Gabriel Dulac-Arnold and Richard Evans and Hado van Hasselt and Peter Sunehag and Timothy Lillicrap and Jonathan Hunt and Timothy Mann and Theophane Weber and Thomas Degris and Ben Coppin},
+    year={2015},
+    eprint={1512.07679},
+    archivePrefix={arXiv},
+    primaryClass={cs.AI}
+}
+
+@InProceedings{poker,
+author="Te{\'o}filo, Lu{\'i}s Filipe
+and Passos, Nuno
+and Reis, Lu{\'i}s Paulo
+and Cardoso, Henrique Lopes",
+editor="Kamel, Mohamed
+and Karray, Fakhri
+and Hagras, Hani",
+title="Adapting Strategies to Opponent Models in Incomplete Information Games: A Reinforcement Learning Approach for Poker",
+booktitle="Autonomous and Intelligent Systems",
+year="2012",
+publisher="Springer Berlin Heidelberg",
+address="Berlin, Heidelberg",
+pages="220--227",
+isbn="978-3-642-31368-4"
+}
+
+
+@article{heinrichphd,
+abstract = {Many real-world applications can be described as large-scale games of imperfect information. To deal with these challenging domains, prior work has focused on computing Nash equilibria in a handcrafted abstraction of the domain. In this paper we introduce the first scalable end-to-end approach to learning approximate Nash equilibria without prior domain knowledge. Our method combines fictitious self-play with deep reinforcement learning. When applied to Leduc poker, Neural Fictitious Self-Play (NFSP) approached a Nash equilibrium, whereas common reinforcement learning methods diverged. In Limit Texas Holdem, a poker game of real-world scale, NFSP learnt a strategy that approached the performance of state-of-the-art, superhuman algorithms based on significant domain expertise.},
+year = {2016},
+title = {Deep Reinforcement Learning from Self-Play in Imperfect-Information Games},
+author = {Heinrich, Johannes and Silver, David},
+keywords = {Computer Science - Learning ; Computer Science - Artificial Intelligence ; Computer Science - Computer Science And Game Theory},
+}
+
+
+@incollection{cfr,
+title = {Regret Minimization in Games with Incomplete Information},
+author = {Martin Zinkevich and Michael Johanson and Bowling, Michael and Carmelo Piccione},
+booktitle = {Advances in Neural Information Processing Systems 20},
+editor = {J. C. Platt and D. Koller and Y. Singer and S. T. Roweis},
+pages = {1729--1736},
+year = {2008},
+publisher = {Curran Associates, Inc.},
+}
+
+@inproceedings{cfr_for_beginners,
+  title={An Introduction to Counterfactual Regret Minimization},
+  author={Todd W. Neller and Marc Lanctot},
+  year={2013}
+}
+
+@article{regression_cfr,
+  author    = {Kevin Waugh and
+               Dustin Morrill and
+               J. Andrew Bagnell and
+               Michael Bowling},
+  title     = {Solving Games with Functional Regret Estimation},
+  journal   = {CoRR},
+  volume    = {abs/1411.7974},
+  year      = {2014},
+  url       = {http://arxiv.org/abs/1411.7974},
+  archivePrefix = {arXiv},
+  eprint    = {1411.7974},
+  timestamp = {Mon, 13 Aug 2018 16:46:02 +0200},
+  biburl    = {https://dblp.org/rec/journals/corr/WaughMBB14.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@article{MCFSP,
+abstract = {Researchers on artificial intelligence have achieved human-level intelligence in large-scale perfect-information games, but it is still a challenge to achieve (nearly) optimal results (in other words, an approximate Nash Equilibrium) in large-scale imperfect-information games (i.e. war games, football coach or business strategies). Neural Fictitious Self Play (NFSP) is an effective algorithm for learning approximate Nash equilibrium of imperfect-information games from self-play without prior domain knowledge. However, it relies on Deep Q-Network, which is off-line and is hard to converge in online games with changing opponent strategy, so it can't approach approximate Nash equilibrium in games with large search scale and deep search depth. In this paper, we propose Monte Carlo Neural Fictitious Self Play (MC-NFSP), an algorithm combines Monte Carlo tree search with NFSP, which greatly improves the performance on large-scale zero-sum imperfect-information games. Experimentally, we demonstrate...},
+journal = {arXiv.org},
+publisher = {Cornell University Library, arXiv.org},
+year = {2019},
+title = {Monte Carlo Neural Fictitious Self-Play: Approach to Approximate Nash equilibrium of Imperfect-Information Games},
+language = {eng},
+address = {Ithaca},
+author = {Zhang, Li and Wang, Wei and Li, Shijian and Pan, Gang},
+keywords = {Game Theory ; Football ; Algorithms ; Game Theory ; Performance Enhancement ; Convergence ; Artificial Intelligence ; Machine Learning ; Economic Models ; Electronic & Video Games ; War Games ; Equilibrium ; Searching},
+url = {http://search.proquest.com/docview/2205777177/},
+}
+
+
+
+@article{dcfr,
+  author    = {Noam Brown and
+               Adam Lerer and
+               Sam Gross and
+               Tuomas Sandholm},
+  title     = {Deep Counterfactual Regret Minimization},
+  journal   = {CoRR},
+  volume    = {abs/1811.00164},
+  year      = {2018},
+  url       = {http://arxiv.org/abs/1811.00164},
+  archivePrefix = {arXiv},
+  eprint    = {1811.00164},
+  timestamp = {Thu, 22 Nov 2018 17:58:30 +0100},
+  biburl    = {https://dblp.org/rec/journals/corr/abs-1811-00164.bib},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+

@@ -167,20 +167,36 @@ Next, we repeat the experiment for Leduc Poker. We run the algorithm for 100.000
 \label{fig:layers_kuhn}
 \includegraphics[width=0.5\textwidth]{Figures/leduc_layer_size.jpg}
 \includegraphics[width=0.5\textwidth]{Figures/leduc_layers.jpg}
-\caption{Influence of ANN layer settings in NFSP on exploitability Kuhn Poker}
+\caption{Influence of ANN layer settings in NFSP on exploitability Leduc Poker}
 \end{figure}
 \end{center}
 
-Now we know the optimal parameters for Kuhn Poker and Leduc Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 60.000 iterations. This number was chosen as the XFSP algorithm does not improve significantly by using even more iterations. In the last paragraph of this section we run the NFSP algoritm for 3.000.000 iterations to see what it is capapble of.
+Now we know the optimal parameters for Kuhn Poker and Leduc Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 60.000 iterations. This number was chosen as the XFSP algorithm does not improve significantly by using even more iterations. It is very clear the XFSP algorithm is much more successful then the NFSP algorithm.
 
 \begin{center}
 \begin{figure}[h]
 \label{fig:layers_kuhn}
-\includegraphics[width=0.5\textwidth]{Figures/kuhn_nfsp.jpg}
-\includegraphics[width=0.5\textwidth]{Figures/leduc_nfsp.jpg}
-\caption{Influence of ANN layer settings in NFSP on exploitability Kuhn Poker}
+\includegraphics[width=0.5\textwidth]{Figures/kuhn_xfsp_nfsp.jpg}
+\includegraphics[width=0.5\textwidth]{Figures/leduc_xfsp_nfsp.jpg}
+\caption{Comparison of XFSP and NFSP on Kuhn Poker (left) and Leduc Poker(right)}
 \end{figure}
 \end{center}
+
+In this last figure, the algorithm NFSP algorithm is ran for 3.000.000 iterations to show what it is capable of. Sadly we were not able to achieve the results for Leduc Poker as described in \cite{heinrichphd}.
+
+\begin{center}
+\begin{figure}[h]
+\label{fig:full_run_nfsp}
+\centering
+\includegraphics[width=0.5\textwidth]{Figures/nfsp_full_run.jpg}
+\end{figure}
+\end{center}
+
+To conclude this section, we compare the computational effort needed to train the XFSP algorithm and the optimal settings for the NFSP algorithm. From table \ref{tab:time_fsp} we can see the XSFP algorithm is much more computationally intesive then the NFSP algorithm. This makes it unsuitable for larger games. Both Leduc Poker and Kuhn Poker are too small to really show the benefit of using the NFSP algorithm, in our opinion the improved training time of NFSP does not weigh up against the improved exploitability of XFSP.
+
+\begin{tcolorbox}
+	Table with times per iteration for NFSP and XFSP
+\end{tcolorbox}
 
 \subsection{CFR and RCFR}
 In this section, the goal is twofold. First, we analyze how Counterfactual Regret Minimization (CFR, as described in \ref{sub:cfr}) performs when learning Kuhn Poker. Next, we examine under which circumstances RCFR (Regression CFR, see \ref{sub:rcfr}) can be used as a viable alternative to CFR.
