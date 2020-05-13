@@ -124,13 +124,6 @@ As such, we note that using RCFR instead of regular CFR should be used as a tech
 
 OpenSpiel supports using RCFR with a user-defined regressor. We chose to use a feedforward neural network. We will examine the results of different network sizes in Section 2 and 3.
 
-\subsubsection{Extension: Deep Counterfactual Regret Minimization}
-Deep Counterfactual Regret Minimization (DCFR) is algorithmically simmilar to RCFR when using a deep learning method to estimate counterfactual regret values. However, when using DCFR, the degree of abstraction (as a result of the chosen regressor) influences how well RCFR approaches CFR. In contract, DCFR is designed to minimize the difference between effective and estimated counterfactual regret values.
-
-DCFR starts by training a value network $V$, where the goal is to train $V$ such that $V^{T}(I,a)$ approximates $R^{T}(I,a)$, the regret that CFR would have produced. In order to achieve this goal, regrets are sampled using Monte Carlo Counterfactual Regret Minimization (MCCFR). \citeauthor{dcfr} show that these samples are an unbiased estimator for CFR regret values.\citep{dcfr}
-
-A separate policy network $\Pi$ is trained to estimate the average policy (which converges to a Nash equilibrium, and should ultimately be the output of the algorithm). This is achieved by keeping a memory of information states that were sampled during previous iterations.
-
 \section{Kuhn Poker}
 \begin{tcolorbox}
 \begin{itemize}
@@ -216,9 +209,9 @@ As mentioned before, openspiel uses a feedforward neural network as a regressor 
 
 It immediately becomes very clear that CFR performs very well when learning Kuhn Poker: the average policy after 1000 iterations has an exploitability of around 1e\textsuperscript{-3}. RCFR struggles to reach these values. The number of layers does not influence the results in a consistent way: it appears that adding more layers and nodes does not make RCFR perform better for Kuhn poker. 
 
-We therefore recommend decreasing the number of layers as much as possible, provided that the exploitability does not appear to worsen. This approach will greatly reduce the time needed to train the agent, as is shown in Figure \ref{tbl:kuhn_times}
+We therefore recommend decreasing the number of layers as much as possible, provided that the exploitability does not appear to worsen. This approach will greatly reduce the time needed to train the agent, as is shown in Table \ref{tbl:kuhn_times}
 
-\begin{figure}
+\begin{table}
 \centering
 \begin{tabular}{|l|r|}
 \hline
@@ -245,11 +238,11 @@ RCFR, 16 layers, 256 nodes & 475 \\
 RCFR, 16 layers, 1024 nodes & 498 \\
 \hline
 \end{tabular}
-\caption{Computation time for Kuhn Poker}
+\caption{Computation time of one iteration for Kuhn Poker, averaged over 50 episodes}
 \label{tbl:kuhn_times}
-\end{figure}
+\end{table}
 
-As expected, RCFR is always much slower than CFR. But when using RCFR, increasing and decreasing the number of layers is mainly what impacts the time per iteration. Based on Figure \ref{fig:rcfr_kuhn} and \ref{tbl:kuhn_times}, we conclude that a network of 4 layers and 64 nodes is our current best setting for RCFR.
+As expected, RCFR is always much slower than CFR. But when using RCFR, increasing and decreasing the number of layers is mainly what impacts the time per iteration. Based on Figure \ref{fig:rcfr_kuhn} and \ref{tbl:kuhn_times}, we conclude that a network of 4 layers and 64 nodes is our current best setting for RCFR. A neural network with these parameters seems to be expressive enough to predict counterfactual regret values. However, 
 
 
  
@@ -269,47 +262,58 @@ As expected, RCFR is always much slower than CFR. But when using RCFR, increasin
 \FloatBarrier
 \begin{figure}[h]
 \includegraphics[scale=0.26]{Figures/rcfr_leduc_parameters1.png}
-\hspace{-0.46cm}
 \includegraphics[scale=0.26]{Figures/rcfr_leduc_parameters2.png}
-\vspace{0.5cm}
 \includegraphics[scale=0.26]{Figures/rcfr_leduc_parameters3.png}
 \caption{Influence of network parameters on CFR and RCFR exploitability}
 \label{fig:rcfr_kuhn}
 \end{figure}
 \FloatBarrier 
 
+Again, we examine the exploitability of CFR and RCFR in an experiment of 1000 iterations. CFR still outperforms RCFR in all cases. It is, however, remarkable how increasing the number of layers causes a monotone decrease in exploitability, which was not the case when learning Kuhn Poker. Still, increasing the number of nodes per layer has no clear influence on exploitability.
+
+Table \ref{tbl:leduc_times} shows how long one iterations takes to compute. Again, using RCFR is slower than using CFR, as expected. It should be noted that the difference in execution time between CFR and RCFR is much smaller for Leduc Poker than for Kuhn Poker: in Kuhn Poker, introducing regression multiplied the time for one iteration by at least 30. In Leduc Poker, this factor is only 3.
+
 \FloatBarrier
-\begin{figure}
+\begin{table}
 	\centering
 	\begin{tabular}{|l|r|}
 	\hline
 	Algorithm & Average time per iteration (milliseconds)\\
 	\thickhline
-	CFR & 6 \\
+	CFR & 946 \\
 	\thickhline
-	RCFR, 4 layers, 64 nodes& 157 \\
+	RCFR, 4 layers, 64 nodes& 2700 \\
 	\hline
-	RCFR, 4 layers, 256 nodes & 153 \\
+	RCFR, 4 layers, 256 nodes & 2539 \\
 	\hline
-	RCFR, 4 layers, 1024 nodes & 161 \\
+	RCFR, 4 layers, 1024 nodes & 2569 \\
 	\thickhline
-	RCFR, 8 layers, 64 nodes & 273 \\
+	RCFR, 8 layers, 64 nodes & 3164 \\
 	\hline
-	RCFR, 8 layers, 256 nodes  & 270 \\
+	RCFR, 8 layers, 256 nodes  & 3289 \\
 	\hline
-	RCFR, 8 layers, 1024 nodes  & 235 \\
+	RCFR, 8 layers, 1024 nodes  & 3717 \\
 	\thickhline
-	RCFR, 16 layers, 64 nodes & 486 \\
+	RCFR, 16 layers, 64 nodes & 4549 \\
 	\hline
-	RCFR, 16 layers, 256 nodes & 475 \\
+	RCFR, 16 layers, 256 nodes & 4725 \\
 	\hline
-	RCFR, 16 layers, 1024 nodes & 498 \\
+	RCFR, 16 layers, 1024 nodes & 4364 \\
 	\hline
 	\end{tabular}
-	\caption{Computation time for Leduc Poker}
-	\label{tbl:kuhn_times}
-\end{figure}
+	\caption{Computation time of one iteration for Leduc Poker, averaged over 50 episodes}
+	\label{tbl:leduc_times}
+\end{table}
 \FloatBarrier
+
+These results confirm some of our expectations with regards to RCFR:
+\begin{itemize}
+\item{RCFR is no viable alternative for CFR when the number of information states is small enough to execute CFR: the error introduced by regression makes it much harder to reach an equilibrium. Both Kuhn Poker and Leduc Poker are games of manageable size, so using RCFR is not recommended (even with a neural network as regressor).}
+\item{The computation time for one iteration of RCFR is much longer than the time for one iteration of CFR. Therefore, to save time, it is not recommended to use RCFR when this is not necessary.}
+\item{For larger games, using an expressive regressor (such as a multi-layered neural network) improves the effectivity of RCFR (at the cost of increased computation times).}
+\end{itemize}
+
+
 
 \bibliographystyle{plainnat}
 \bibliography{lit}
