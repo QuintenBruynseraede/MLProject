@@ -144,8 +144,8 @@ On the right hand side of this figure we plot the influence of the number of hid
 \begin{center}
 \begin{figure}[h]
 \label{fig:layers_kuhn}
-\includegraphics[width=0.5\textwidth]{Figures/kuhn_layer_size.jpg}
-\includegraphics[width=0.5\textwidth]{Figures/kuhn_layers.jpg}
+\includegraphics[width=0.5\textwidth]{Figures/kuhn_layers.png}
+\includegraphics[width=0.5\textwidth]{Figures/kuhn_nodes.png}
 \caption{Influence of ANN layer settings in NFSP on exploitability Kuhn Poker}
 \end{figure}
 \end{center}
@@ -158,19 +158,19 @@ Assuming that these are good parameters for Kuhn Poker, we compare the optimal s
 \begin{figure}[h]
 \centering
 \label{fig:layers_kuhn}
-\includegraphics[width=0.5\textwidth]{Figures/kuhn_xfsp_nfsp.jpg}
-\caption{Exploitability of XFSP and NFSP on Kuhn Poker (left) and Leduc Poker(right)}
+\includegraphics[width=0.5\textwidth]{Figures/xfsp_nfsp_kuhn.png}
+\caption{Exploitability of XFSP and NFSP on Kuhn Poker}
 \end{figure}
 
 In this last figure, the algorithm NFSP algorithm is ran for 3.000.000 iterations to show what it is capable of. Sadly we were not able to achieve the results for Leduc Poker as described in \cite{heinrichphd}.
 
-\begin{center}
-\begin{figure}[h]
-\label{fig:full_run_nfsp}
-\centering
-\includegraphics[width=0.5\textwidth]{Figures/nfsp_full_run.jpg}
-\end{figure}
-\end{center}
+% \begin{center}
+% \begin{figure}[h]
+% \label{fig:full_run_nfsp}
+% \centering
+% \includegraphics[width=0.5\textwidth]{Figures/nfsp_full_run.jpg}
+% \end{figure}
+% \end{center}
 
 To conclude this section, we compare the computational effort needed to train the XFSP algorithm and the optimal settings for the NFSP algorithm. From table \ref{tab:time_fsp} we can see the XSFP algorithm is much more computationally intesive then the NFSP algorithm. This makes it unsuitable for larger games. Both Leduc Poker and Kuhn Poker are too small to really show the benefit of using the NFSP algorithm, in our opinion the improved training time of NFSP does not weigh up against the improved exploitability of XFSP.
 
@@ -249,8 +249,8 @@ As before, we examine which parameters for the ANN in NFSP give the best results
 \begin{center}
 \begin{figure}[h]
 \label{fig:layers_kuhn}
-\includegraphics[width=0.5\textwidth]{Figures/leduc_layer_size.jpg}
-\includegraphics[width=0.5\textwidth]{Figures/leduc_layers.jpg}
+\includegraphics[width=0.5\textwidth]{Figures/leduc_layers.png}
+\includegraphics[width=0.5\textwidth]{Figures/leduc_nodes.png}
 \caption{Influence of ANN layer settings in NFSP on exploitability Leduc Poker}
 \end{figure}
 \end{center}
@@ -258,8 +258,9 @@ As before, we examine which parameters for the ANN in NFSP give the best results
 
 \begin{center}
 	\begin{figure}[h]
+	\centering
 	\label{fig:layers_kuhn}
-	\includegraphics[width=0.5\textwidth]{Figures/leduc_xfsp_nfsp.jpg}
+	\includegraphics[width=0.5\textwidth]{Figures/xfsp_nfsp_leduc.png}
 	\caption{Exploitability when using NFSP and XFSP on Leduc Poker}
 	\end{figure}
 	\end{center}
