@@ -182,7 +182,7 @@ We ran the algorithm for 25 000 iterations to keep the execution time manageable
 We see that the size of layers greatly influences the exploitability when learning Kuhn Poker. In general, a lower number of layers is preferred. At the same time, it appears that a higher number of nodes gives better results. This confirms However, we find that the sweet spot lies at 64 nodes per layer, which results in a manageable training time and gives decent performance.
 An important remark is that the algorithm does not improve its exploitability for a long time. Around the 10.000th iteration the exploitability start to drop. 
 
-Assuming that these are good parameters for Kuhn Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 60 000 iterations. This number was chosen as the XFSP algorithm does not improve significantly beyond this point. XFSP clearly outperform NFSP in this experiment.
+Assuming that these are good parameters for Kuhn Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 100 000 iterations. This number was chosen as the XFSP algorithm does not improve significantly beyond this point. XFSP clearly outperform NFSP in this experiment.
 
 \begin{figure}[h]
 \centering
@@ -259,7 +259,7 @@ RCFR, 16 layers, 1024 nodes & 498 \\
 As expected, RCFR is always much slower than CFR. But when using RCFR, increasing and decreasing the number of layers is mainly what impacts the time per iteration. Based on Figure \ref{fig:rcfr_kuhn} and \ref{tbl:kuhn_times}, we conclude that a network of 4 layers and 64 nodes is our current best setting for RCFR. A neural network with these parameters seems to be expressive enough to predict counterfactual regret values, as increasing the size of the ANN does not improve performance. However, even with these seemingly good parameters, the exploitability of a policy learned by RCFR is much higher than one learning by CFR. 
 
 \subsection{XFSP vs CFR}
- In this final section for Kuhn Poker, we compare the performance of the current best algorithms (XFSP and CFR) in a longer experiment. For Kuhn Poker, we chose to train both agents for 100 000 episodes. In longer runs (up to 3 million episodes), the marginal performance gain did not justify the additional training time (up to 48 hours for XFSP).
+ In this final section for Kuhn Poker, we compare the performance of the current best algorithms (XFSP and CFR) in a longer experiment. For Kuhn Poker, we chose to train both agents for 100 000 episodes. In longer runs (up to 3 million episodes), the marginal performance gain did not justify the additional training time. Training for 100.000 episodes could take up to 48 hours for XFSP).
 
 \begin{figure}[h]
 \centering
@@ -280,17 +280,22 @@ CFR clearly outperforms XFSP, although both algorithms find the Nash equilibrium
 \end{itemize}
 \end{tcolorbox}
 \subsection{NFSP and XFSP}
-As before, we examine which parameters for the ANN in NFSP give the best results, this time for Leduc Poker. We run the algorithm for 100 000 iterations, as the game is much harder to learn and the results after only 25 000 iterations are not representative.
+For the Leduc variant of the poker game, we partly repeat our testing methodology for NFSP and XFSP. We first test the impact of the number of layers and hidden nodes used in the NFSP agents. Next, we compare NFSP and XFSP in both performance as well as computational effort needed to train the agents.
+ 
+On the left hand side of figure \ref{fig:layers_leduc}, we see examine the impact of adding layers to the neural network of NFSP. From this figure, we can conclude the optimal configuration is to only use one layer in the ANN. This result confirms what \cite{heinrichphd} suggests.
+On the right hand side of this figure, we compare the configuration of individual layers. We vary the number of hidden nodes from 4 to 128. This way we can examine the optimal number of nodes with resprect to the exploitability of the policy.
+From the figure we can conclude 4 nodes is clearly too little to approximate the function needed. Even more striking is the fact that there is no real difference between using 64 or 128 nodes per layer. This result comes in handy when using NFSP in experiments with more iteration as the training time is significantly increased from 64 nodes to 128 nodes (see Table \ref{tab:fsp_leduc}).
 
 \begin{center}
 \begin{figure}[h]
-\label{fig:layers_kuhn}
+\label{fig:layers_leduc}
 \includegraphics[width=0.5\textwidth]{Figures/leduc_layers.png}
 \includegraphics[width=0.5\textwidth]{Figures/leduc_nodes.png}
 \caption{Influence of ANN layer settings in NFSP on exploitability Leduc Poker}
 \end{figure}
 \end{center}
 
+To compare the performace of NFSP and XFSP, we trained both agents for 60.000 iterations. Beyond this point, the marginal gains in exploitability were not worth the extra training time needed. This becomes clear in the overview of training times in Table \ref{tab:fsp_leduc}. Like the experiment with Kuhn Poker, the XFSP agent greatly outperforms the NFSP agent. 
 
 \begin{center}
 	\begin{figure}[h]
@@ -330,6 +335,7 @@ NFSP 1 layer, 128 nodes & 85 \\
 \hline 
 \end{tabular}
 \caption{Running time FSP algorithms for Leduc Poker}
+\label{tab:fsp_leduc}
 \end{center}
 \end{table} 
 
