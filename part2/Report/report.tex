@@ -134,12 +134,12 @@ OpenSpiel supports using RCFR with a user-defined regressor. We chose to use a f
 \end{tcolorbox}
 
 \subsection{NFSP and XFSP}
-In the following section we discuss results of the NFSP and XFSP algorithm as discribed in \ref{sub:nfsp} and \ref{sub:xfsp}. As a baseline we use the XFSP algorithm as it is the exact interpretation of the Fictious Self Play algorithm. Next, we optimize different parameters of the NFSP algorithm for the games kuhn poker and leduc poker. Lastly we compare the computational effort needed to run both algorithms in different settings.
+In the following section we discuss results of the NFSP and XFSP algorithm (as discribed in \ref{sub:nfsp} and \ref{sub:xfsp}). We use the XFSP algorithm as a baseline, because it is the exact interpretation of the Fictious Self Play algorithm. Next, we optimize different parameters of the NFSP algorithm for Kuhn and Leduc poker. Lastly, we compare the computational effort needed to run both algorithms in different settings.
 
-We use the results of \cite{heinrichphd} as a baseline for Leduc Poker and try to relicate the testing methodolgy for Kuhn Poker.
+We use the results of \cite{heinrichphd} as a starting point for Leduc Poker and try to replicate that testing methodology for Kuhn Poker.
 First we try to find the optimal size of neural network for Kuhn Poker. This is important as the size of the network greatly influences the training time.
-\cite{heinrichphd} suggests an ANN with 1 hidden layer of 64 nodes for the Leduc Poker setting. Therefore we start by only using one layer in the Kuhn Poker setting and adapt its number of nodes. The influence of the layer size on the exploitability is shown on the left hand side of \ref{fig:layers_kuhn}
-On the right hand side of this figure we plot the influence of the number of hidden layers on the exploitability. We run the algorithm for 25.000 iterations to keep the execution time manageable but also get representative results of what the algorithm is capable of.
+\cite{heinrichphd} suggests an ANN with 1 hidden layer of 64 nodes for the Leduc Poker setting. Therefore, we start with one layer in the Kuhn Poker setting and adapt the number of nodes. The influence of the layer size on the exploitability is shown on the left hand side of \ref{fig:layers_kuhn}
+On the right hand side of this figure we plot the influence of the number of hidden layers on the exploitability. We run the algorithm for 25 000 iterations to keep the execution time manageable, while still getting representative results.
 
 \begin{center}
 \begin{figure}[h]
@@ -150,30 +150,17 @@ On the right hand side of this figure we plot the influence of the number of hid
 \end{figure}
 \end{center}
 
-We see that the size of layers greatly influences the exploitability on Kuhn Poker. As the number of nodes increases, the exploitability is further reduced. However, we find that the sweetspot lies at 64 nodes per layer. This results in a manageable training time but gives great performance.
+We see that the size of layers greatly influences the exploitability when learning Kuhn Poker. As the number of nodes increases, the exploitability drops. However, we find that the sweet spot lies at 64 nodes per layer. This results in a manageable training time and gives good performance.
 An important remark is that the algorithm does not improve its exploitability for a long time. Around the 10.000th iteration the exploitability start to drop. 
 
-Next, we repeat the experiment for Leduc Poker. We run the algorithm for 100.000 iterations as the game is much harder to learn and the results after 25.000 iterations are not representative.
+Assuming that these are good parameters for Kuhn Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 60 000 iterations. This number was chosen as the XFSP algorithm does not improve significantly beyond this point. XFSP clearly outperform NFSP in this experiment.
 
-\begin{center}
 \begin{figure}[h]
-\label{fig:layers_kuhn}
-\includegraphics[width=0.5\textwidth]{Figures/leduc_layer_size.jpg}
-\includegraphics[width=0.5\textwidth]{Figures/leduc_layers.jpg}
-\caption{Influence of ANN layer settings in NFSP on exploitability Leduc Poker}
-\end{figure}
-\end{center}
-
-Now we know the optimal parameters for Kuhn Poker and Leduc Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 60.000 iterations. This number was chosen as the XFSP algorithm does not improve significantly by using even more iterations. It is very clear the XFSP algorithm is much more successful then the NFSP algorithm.
-
-\begin{center}
-\begin{figure}[h]
+\centering
 \label{fig:layers_kuhn}
 \includegraphics[width=0.5\textwidth]{Figures/kuhn_xfsp_nfsp.jpg}
-\includegraphics[width=0.5\textwidth]{Figures/leduc_xfsp_nfsp.jpg}
-\caption{Comparison of XFSP and NFSP on Kuhn Poker (left) and Leduc Poker(right)}
+\caption{Exploitability of XFSP and NFSP on Kuhn Poker (left) and Leduc Poker(right)}
 \end{figure}
-\end{center}
 
 In this last figure, the algorithm NFSP algorithm is ran for 3.000.000 iterations to show what it is capable of. Sadly we were not able to achieve the results for Leduc Poker as described in \cite{heinrichphd}.
 
@@ -256,6 +243,26 @@ As expected, RCFR is always much slower than CFR. But when using RCFR, increasin
 \item{Under which circumstances does RCFR approach classical CFR when learning Kuhn Poker?}
 \end{itemize}
 \end{tcolorbox}
+\subsection{NFSP and XFSP}
+As before, we examine which parameters for the ANN in NFSP give the best results, this time for Leduc Poker. We run the algorithm for 100 000 iterations, as the game is much harder to learn and the results after only 25 000 iterations are not representative.
+
+\begin{center}
+\begin{figure}[h]
+\label{fig:layers_kuhn}
+\includegraphics[width=0.5\textwidth]{Figures/leduc_layer_size.jpg}
+\includegraphics[width=0.5\textwidth]{Figures/leduc_layers.jpg}
+\caption{Influence of ANN layer settings in NFSP on exploitability Leduc Poker}
+\end{figure}
+\end{center}
+
+
+\begin{center}
+	\begin{figure}[h]
+	\label{fig:layers_kuhn}
+	\includegraphics[width=0.5\textwidth]{Figures/leduc_xfsp_nfsp.jpg}
+	\caption{Exploitability when using NFSP and XFSP on Leduc Poker}
+	\end{figure}
+	\end{center}
 
 \subsection{CFR and RCFR}
 
