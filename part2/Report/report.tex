@@ -10,6 +10,8 @@
 \usepackage{ amssymb }
 \usepackage{placeins}
 \usepackage{array}
+\usepackage{listings}
+
 
 \makeatletter
 \newcommand{\thickhline}{%
@@ -378,8 +380,151 @@ These results confirm some of our expectations with regards to RCFR:
 
 \bibliographystyle{plainnat}
 \bibliography{lit}
+\newpage
 \section*{Appendix}
 \subsection{Time spent}
+\subsection{Code}
+This section contains the code for the training of all our agents.
+It should be noted that many of the bookkeeping functionality to perform the experiments is removed from the listing. This would make most of the code very unreadable and irrelevant.
+
+\begin{lstlisting}[language=Python]
+def xfsp_train(_):
+    exploit_history = list()
+    exploit_idx = list()
+    game = pyspiel.load_game(FLAGS.game,{"players": pyspiel.GameParameter(2)})
+    fsp_solver = fictitious_play.XFPSolver(game)
+    checkpoint = datetime.now()
+    for ep in range(FLAGS.episodes):
+        if (ep % 100) == 0:
+            pol = policy.PolicyFromCallable(game, fsp_solver.average_policy_callable())
+            conv = exploitability.exploitability(game,pol)
+            exploit_history.append(conv)
+            exploit_idx.append(ep).
+            print("[CFR] Iteration {}, Exploitability {}".format(ep, expl))
+
+        fsp_solver.iteration()
+
+    agent_name = "xfsp"
+    pickle.dump([exploit_idx,exploit_history],
+    		open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+
+def nfsp_train(_):
+    env = rl_environment.Environment(FLAGS.game)
+    state_size = env.observation_spec()["info_state"][0]
+    num_actions = env.action_spec()["num_actions"]
+    kwargs = {
+      "replay_buffer_capacity": 2e5,
+      "epsilon_decay_duration": FLAGS.episodes,
+      "epsilon_start": 0.06,
+      "epsilon_end": 0.001,
+    }
+    sess =  tf.Session()
+    players = [nfsp.NFSP(sess,idx,
+                    state_representation_size=state_size,
+                    num_actions=num_actions,
+                    hidden_layers_sizes=64,
+                    reservoir_buffer_capacity=2e6,
+                    rl_learning_rate=0.1,
+                    sl_learning_rate=0.005,
+                    anticipatory_param=0.1,
+                    batch_size=128,
+                    learn_every=64,**kwargs) for idx in range(2)]  
+    expl_policies_avg = NFSPPolicies(env,players,nfsp.MODE.average_policy)
+    
+    run_nfsp_agents(sess,env,players,expl_policies_avg)
+    sess.close()
+\end{lstlisting}
+\newpage
+\begin{lstlisting}[language=Python]
+def run_nfsp_agents(sess, env, agents, expl_policies_avg):
+    
+    sess.run(tf.global_variables_initializer())
+    exploit_idx = list()
+    exploit_history = list()
+    start = datetime.now()
+    for ep in range(FLAGS.episodes):
+        if ep % 100 == 0:
+            delta = datetime.now() - start
+            expl = exploitability.exploitability(env.game, expl_policies_avg)
+            exploit_idx.append(ep)
+            exploit_history.append(expl)
+            print("[NFSP] Iteration {}, Exploitability {}".format(ep, expl))
+
+
+        time_step = env.reset()
+        while not time_step.last():
+            player_id = time_step.observations["current_player"]
+            agent_output = agents[player_id].step(time_step)
+            action_list = [agent_output.action]
+            time_step = env.step(action_list)
+
+        # Episode is over, step all agents with final info state.
+        for agent in agents:
+            agent.step(time_step)
+
+    agent_name = "nfsp"
+    pickle.dump([exploit_idx,exploit_history],
+    		open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+    
+def cfr_train(_):
+   exploit_history = list()
+   exploit_idx = list()
+   game = pyspiel.load_game(FLAGS.game,{"players": pyspiel.GameParameter(2)})
+   cfr_solver = cfr.CFRSolver(game)
+   checkpoint = datetime.now()
+   for ep in range(FLAGS.episodes):
+       cfr_solver.evaluate_and_update_policy()
+       if ep % 100 == 0:
+           delta = datetime.now() - checkpoint
+           expl = exploitability.exploitability(game, cfr_solver.average_policy())
+           exploit_idx.append(ep)
+           exploit_history.append(conv)
+           print("[CFR] Iteration {}, Exploitability {}".format(ep, expl))
+           checkpoint = datetime.now()
+    
+   agent_name = "cfr"
+   pickle.dump([exploit_idx,exploit_history],
+   		open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+\end{lstlisting}
+\newpage
+\begin{lstlisting}[language=Python]
+def rcfr_train(_):
+    game = pyspiel.load_game(FLAGS.game,{"players": pyspiel.GameParameter(2)})
+    models = [rcfr.DeepRcfrModel(
+                        game,
+                        num_hidden_layers=1,
+                        num_hidden_units=64 if FLAGS.game == "leduc_poker" else 13,
+                        num_hidden_factors=1,
+                        use_skip_connections=True) for _ in range(game.num_players())]
+    patient = rcfr.RcfrSolver(
+                    game, models, False, True)
+    exploit_history = list()
+    exploit_idx = list()
+
+    def _train(model, data):
+        data = data.shuffle(1000)
+        data = data.batch(12)
+        #data = data.repeat(1)  
+        optimizer = tf.keras.optimizers.Adam(lr=0.005, amsgrad=True)    
+        for x, y in data:
+            optimizer.minimize(
+                lambda: tf.losses.huber_loss(y, model(x)),  # pylint: disable=cell-var-from-loop
+                model.trainable_variables)
+
+    for iteration in range(FLAGS.episodes):
+        if (iteration % 100) == 0:
+            conv = pyspiel.exploitability(game, patient.average_policy())
+            exploit_idx.append(iteration)
+            exploit_history.append(conv)
+            print("[CFR] Iteration {}, Exploitability {}".format(ep, expl))
+        patient.evaluate_and_update_policy(_train)
+
+    agent_name = "rcfr"
+    pickle.dump([exploit_idx,exploit_history],
+    		open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+
+\end{lstlisting}
+
 \end{document}
 
 CFR
