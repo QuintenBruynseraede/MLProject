@@ -124,14 +124,38 @@ As such, we note that using RCFR instead of regular CFR should be used as a tech
 
 OpenSpiel supports using RCFR with a user-defined regressor. We chose to use a feedforward neural network. We will examine the results of different network sizes in Section 2 and 3.
 
-\section{Kuhn Poker}
-\begin{tcolorbox}
-\begin{itemize}
-\item{Which algorithm is most suitable to develop an agent to play Kuhn Poker, minimizing exploitability?}
-\item{Under which circumstances does RCFR approach classical CFR when learning Kuhn Poker?}
-\item{Can we exploit properties of Kuhn Poker to optimize parameters?}
-\end{itemize}
-\end{tcolorbox}
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|r|}
+\hline 
+Algorithm & Average time per iteration (miliseconds) \\
+\hline 
+XFSP & 14 \\ 
+\thickhline 
+NFSP 1 layer, 64 nodes & 51 \\ 
+\hline 
+NFSP 2 layers, 64 nodes  & 53 \\ 
+\hline 
+NFSP 4 layers, 64 nodes & 53 \\ 
+\hline 
+NFSP 8 layers, 64 nodes & 63 \\ 
+\hline 
+NFSP 16 layers, 64 nodes & 67 \\ 
+\thickhline
+NFSP 1 layer, 4 nodes & 3 \\ 
+\hline 
+NFSP 1 layer, 8 nodes & 14 \\ 
+\hline 
+NFSP 1 layer, 16 nodes & 26 \\ 
+\hline 
+NFSP 1 layer, 32 nodes & 38 \\ 
+\hline 
+NFSP 1 layer, 128 nodes & 64 \\ 
+\hline 
+\end{tabular}
+\caption{Running time FSP algorithms for Kuhn Poker}
+\end{center}
+\end{table} 
 
 \subsection{NFSP and XFSP}
 In the following section we discuss results of the NFSP and XFSP algorithm (as discribed in \ref{sub:nfsp} and \ref{sub:xfsp}). We use the XFSP algorithm as a baseline, because it is the exact interpretation of the Fictious Self Play algorithm. Next, we optimize different parameters of the NFSP algorithm for Kuhn and Leduc poker. Lastly, we compare the computational effort needed to run both algorithms in different settings.
@@ -174,9 +198,6 @@ In this last figure, the algorithm NFSP algorithm is ran for 3.000.000 iteration
 
 To conclude this section, we compare the computational effort needed to train the XFSP algorithm and the optimal settings for the NFSP algorithm. From table \ref{tab:time_fsp} we can see the XSFP algorithm is much more computationally intesive then the NFSP algorithm. This makes it unsuitable for larger games. Both Leduc Poker and Kuhn Poker are too small to really show the benefit of using the NFSP algorithm, in our opinion the improved training time of NFSP does not weigh up against the improved exploitability of XFSP.
 
-\begin{tcolorbox}
-	Table with times per iteration for NFSP and XFSP
-\end{tcolorbox}
 
 \subsection{CFR and RCFR}
 In this section, the goal is twofold. First, we analyze how Counterfactual Regret Minimization (CFR, as described in \ref{sub:cfr}) performs when learning Kuhn Poker. Next, we examine under which circumstances RCFR (Regression CFR, see \ref{sub:rcfr}) can be used as a viable alternative to CFR.
@@ -264,6 +285,38 @@ As before, we examine which parameters for the ANN in NFSP give the best results
 	\caption{Exploitability when using NFSP and XFSP on Leduc Poker}
 	\end{figure}
 	\end{center}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{|l|r|}
+\hline 
+Algorithm & Average time per iteration (miliseconds) \\\hline 
+XFSP & 2936 \\ 
+\thickhline 
+NFSP 1 layer, 64 nodes & 51 \\ 
+\hline 
+NFSP 2 layers, 64 nodes  & 53 \\ 
+\hline 
+NFSP 4 layers, 64 nodes & 57 \\ 
+\hline 
+NFSP 8 layers, 64 nodes & 62 \\ 
+\hline 
+NFSP 16 layers, 64 nodes & 85 \\ 
+\thickhline
+NFSP 1 layer, 4 nodes & 4 \\ 
+\hline 
+NFSP 1 layer, 8 nodes & 14 \\ 
+\hline 
+NFSP 1 layer, 16 nodes & 26 \\ 
+\hline 
+NFSP 1 layer, 32 nodes & 38 \\ 
+\hline 
+NFSP 1 layer, 128 nodes & 85 \\ 
+\hline 
+\end{tabular}
+\caption{Running time FSP algorithms for Leduc Poker}
+\end{center}
+\end{table} 
 
 \subsection{CFR and RCFR}
 
