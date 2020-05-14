@@ -404,24 +404,27 @@ These results are as expected. CFR still outperforms XFSP when learning Leduc po
 Based on the results shown in Section 2 and 3, we draw some important conclusions about learning Kuhn Poker and Leduc Poker in a reinforcement learning setting:
 
 \begin{itemize}
-\item{}
-\item{}
-\item{}
+\item{Out of the four algorithms we examined, CFR consistently performs best. }
+\item{Both Kuhn and Leduc Poker are not large enough to require RCFR.}
+\item{When using RCFR with an ANN, a larger amonut of hidden layers improves learning, at the cost of increased computation time.}
 \end{itemize}
 
 \bibliographystyle{plainnat}
 \bibliography{lit}
-<<<<<<< HEAD
 
 
 
 
 
-=======
->>>>>>> 23f99bb9562ca37d55d23ff7ad73bccba19ce656
 \newpage
 \section*{Appendix}
 \subsection{Time spent}
+The workload for this assignment was as expted for a 3 ECTS-credit course. Our work fell into three categories:
+\begin{itemize}
+\item{\textbf{Literature study: } we started by reading up on some relevant literature, trying to decide which algorithms we would use in our experiments. Next, we studied the details of each algorithm to describe it thoroughly in our report. All of this took part over the course of 2 days, about 8 hours for each one of us.}
+\item{\textbf{Running experiments and collecting data: } the biggest task was run all relevant experiments and collect data. We estimate this took about 20 hours of actual work for each one of us. (not including leaving our pc running during experiments).}
+\item{\textbf{Report: } we generated the graphs, tables, and wrote this report over the course of two days, totalling about 15 hours of work for each one of us.}
+\end{itemize}
 \subsection{Code}
 This section contains the code for the training of all our agents.
 It should be noted that many of the bookkeeping functionality to perform the experiments is removed from the listing. This would make most of the code very unreadable and irrelevant.
