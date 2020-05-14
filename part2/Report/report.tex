@@ -333,7 +333,6 @@ NFSP 1 layer, 128 nodes & 85 \\
 
 \subsection{CFR and RCFR}
 
-\FloatBarrier
 \begin{figure}[h]
 \includegraphics[scale=0.26]{Figures/rcfr_leduc_parameters1.png}
 \includegraphics[scale=0.26]{Figures/rcfr_leduc_parameters2.png}
@@ -341,11 +340,10 @@ NFSP 1 layer, 128 nodes & 85 \\
 \caption{Influence of network parameters on CFR and RCFR exploitability}
 \label{fig:rcfr_kuhn}
 \end{figure}
-\FloatBarrier 
 
 Again, we examine the exploitability of CFR and RCFR in an experiment of 1000 iterations. CFR still outperforms RCFR in all cases. It is, however, remarkable how increasing the number of layers causes a monotone decrease in exploitability, which was not the case when learning Kuhn Poker. Still, increasing the number of nodes per layer has no clear influence on exploitability.
 
-Table \ref{tbl:leduc_times} shows how long one iterations takes to compute. Again, using RCFR is slower than using CFR, as expected. It should be noted that the difference in execution time between CFR and RCFR is much smaller for Leduc Poker than for Kuhn Poker: in Kuhn Poker, introducing regression multiplied the time for one iteration by at least 30. In Leduc Poker, this factor is only 3.
+Table \ref{tbl:leduc_times} shows how long one iteration takes to compute. Again, using RCFR is slower than using CFR, as expected. It should be noted that the difference in execution time between CFR and RCFR is much smaller for Leduc Poker than for Kuhn Poker: in Kuhn Poker, introducing regression multiplied the time for one iteration by at least 30. In Leduc Poker, this factor is only 3.
 
 \FloatBarrier
 \begin{table}
@@ -397,6 +395,17 @@ Similary to Kuhn Poker, we test our two most promising algorithms for a longer e
 \label{fig:xfsp_vs_cfr_leduc}
 \end{figure}
 
+These results are as expected. CFR still outperforms XFSP when learning Leduc poker. As Leduc Poker is a much larger game than Kuhn Poker, both algorithms return a policy that is more exploitable. Still, CFR manages to approximate the Nash equilibrium with an exploitablity of less than 1e\textsuperscript{-3}
+
+\section{Conclusions}
+
+Based on the results shown in Section 2 and 3, we draw some important conclusions about learning Kuhn Poker and Leduc Poker in a reinforcement learning setting:
+
+\begin{itemize}
+\item{}
+\item{}
+\item{}
+\end{itemize}
 
 \bibliographystyle{plainnat}
 \bibliography{lit}
