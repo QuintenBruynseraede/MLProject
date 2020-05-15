@@ -26,53 +26,53 @@
 \subsection{Evaluation metrics}
 Evaluation of agents is traditionally done using \textbf{NashConv} and \textbf{exploitability}. We introduce these concepts here, using terminology consistent with \citeauthor{lanctot2019openspiel} \citep{lanctot2019openspiel}.
 
-Given a two-player policy$\pi$, we say that $\pi^{b}_{i}$ is the best response for player $i$. The best response is defined as the policy that maximizes payoff for player $i$, given the policies of other players ($pi_{-i}$). 
+Given a two-player policy $\pi$, we say that $\pi^{b}_{i}$ is the best response for player $i$. The best response is defined as the policy that maximizes payoff for player $i$, given the policies of other players ($\pi_{-i}$). 
 
 We then define the incentive to change policies $d_{i}(\pi)$ as $d_{i}(\pi) = u_{i}(\pi^{b}_{i},\pi_{-i}) - u_{i}(\pi)$, i.e. the possible gain in value when switching to a best-response strategy. It is clear that this can be used as a metric to evaluate a policy: a Nash equilibrium is found when $d_{i}(\pi)$ = 0 (the policy cannot be improved given other player's policies). Any value $>0$ captures room for improvement for a given theory. 
 
 From this initial notion of policy evaluation, the \textbf{NashConv} metric is derived as the sum of $d_{i}(\pi)$ for both players.
 
-Another metric that is often used, is \textbf{exploitability}. For two-player zero-sum games (such as the games we will be learning in this assignment), exploitability equals $\frac{NashConv}{2}$. We therefore only use Exploitability to evaluate our policies (as NashConv can be derived from Exploitability in this case).
+Another metric that is often used, is \textbf{exploitability}. For two-player zero-sum games (such as the games we will be learning in this assignment), exploitability equals $\frac{NashConv}{2}$. We therefore only use exploitability to evaluate our policies (as NashConv can be derived from Exploitability in this case).
 
 Looking for Nash equilibria is interesting in zero-sum games because they guarantee a maximal payoff against any policy the other players might have. We will therefore focus on finding approximations of Nash equilibria (i.e. minimizing exploitability). 
 
 \subsection{Normal form - Extensive form}
-In game theoretic aspects, two forms of representing a game exists: normal form and extensive form. The normal form description of a game can be represented as a payoff matrix. This means every action for every player must be included in the matrix. This makes the representation extremely incovenient for larger games like leduc poker.
+We examine two forms of representing a game: normal form and extensive form. The normal form description of a game can be represented as a payoff matrix. This means every action for every player must be included in the matrix. This makes the representation extremely incovenient for larger games like leduc poker.
 The extstensive form representation of games uses a tree to represent all states of a game. The nodes of this tree represent the descision points in the game for a player. Every branch represents a choice made by a player in the decision point. This representation is much more compact and contains much more information about the course of the game.
 
 \subsection{Algorithm 1: Fictitious Self-Play}
 \label{sub:xfsp}
-Fictious play is a classic algorithm introduced by \cite{fp}. It's goal is to find the optimal strategy or Nash equilibrium for imperfect games in normal form \cite{MCFSP}. The algorithm is based on the fictitous play of the game, which corresponds to a player simulating a game in it's head and choosing the best response for the current situation. In this simulation, the player assumes the opponent always chooses the best response.
+Fictious play is a classic algorithm introduced by George W. Brown. It's goal is to find the optimal strategy or Nash equilibrium for imperfect games in normal form \cite{MCFSP}. The algorithm is based on the fictitous play of the game, which corresponds to a player simulating a game in it's head and choosing the best response for the current situation. In this simulation, the player assumes the opponent always chooses the best response.
 
 This elegant and simple algorithm has proven to be very successful in relatively small games, however, as stated by \cite{fsp-ext}, the algorithm only works with games in normal form. Extensive-form games can be cconverted into normal form games but the number of actions increases exponentially in the number of game sates \cite{fsp-ext}.
 Therefore the Extensive Fictious Play algorithm was developped by \cite{fsp-ext} to support self play for extensive form games.
 
 The algorithm consisists of two steps: finding the best response for the current state, and updating the current average strategy of the agent.
-To find the best reponse for the curren state, the game state tree is traversed and the set of best responses is calculated based on the final outcome. Out of this set, a best reponse is selected.
+To find the best reponse for the current state, the game state tree is traversed and the set of best responses is calculated based on the final outcome. Out of this set, a best reponse is selected.
 The seconds step is to update the average policy by using the calculated best response. The update rule for the policy is the following:
 \begin{math}
 \pi_{i+1}(u) = \pi_{i}(u) + \frac{\alpha_{i+1}x_{\beta_{i+1}}(\sigma_{u})(\beta_{i+1}(u) - \pi_i(u))}{(1-\alpha_{i+1})x_{\pi_i}(\sigma_{u}) + \alpha_{i+1}x_{\beta_{i+1}}(\sigma_u)}
 \end{math}.\\
-Where $\pi_n(u)$ indicates the action probabilities of the policy at iteration $n$, $\beta_n$ the best reponse calcuated in step 1 and $\sigma{u}$ a sequence of actions to reach state $u$. $x{\beta}(\sigma_u)$ is the realization plan for this sequence, given best response $\beta$.\\
+Where $\pi_n(u)$ indicates the action probabilities of the policy at iteration $n$, $\beta_n$ the best reponse calcuated in step 1 and $\sigma_{u}$ a sequence of actions to reach state $u$. $x_{\beta}(\sigma_u)$ is the realization plan for this sequence, given best response $\beta$.\\
 The main issue with this form of fictitous play is the computational effort needed to calculate the best response. 
 Reinforcement learning can address this problem by using machine learning techniques to approximate the optimal response.
 The reinforcement techniques plug in in a framework called FSP or Fictious Self Play. Here, both calculation of the best response and the update of the policy can be substitued by reinforcement learning methods.
 
 \subsubsection{Extension: Neural Fictitious Self-Play}
 \label{sub:nfsp}
-In the NFSP algorithm, the best response and update rule are approximated by training two neural networks.
+In the NFSP algorithm, the best response and policy update rule are approximated by training two neural networks.
 \paragraph{Best response}
 To calculate the best response, we train a Deep Q-network or DQN. This agent learns an $\epsilon$-greedy policy \cite{heinrichphd}. 
 This can be done as the games considered have perfect recall and the history of the game is thus available to the agents. By using this history the agent gains experience and approximates the best response for a given state.
 The implementation of NFSP in Openspiel uses a multilayer perceptron network (MLP).
 \paragraph{Average Strategy}
-To compute the action probabilities for a given state in the game, NFSP trains another ANN which maps these states to the corresponding probabilities. The network is trained by using information of past actions performed. As the average policy is approximated, the network does not need to be consulted every iteration of the learning process. This means the update can be much more effecient when using a good ANN.
+To compute the action probabilities for a given state in the game, NFSP trains another ANN which maps these states to the corresponding probabilities. The network is trained by using information of past actions performed. As the average policy is approximated, the network does not need to be consulted every iteration of the learning process. This means the update can be much more effecient when using a good ANN architecture.
 In the Openspiel implementation of NFSP this is an MLP.
 \subsection{Algorithm 2: Counterfactual Regret Minimization}
 \label{sub:cfr}
 Counterfactual Regret Minimization (CFR in short) is an algorithm that is designed to find Nash equilibria in large games. It introduces the notion of counterfactual regret, and minimizes this to compute a Nash Equilibrium. \citeauthor{cfr} \citep{cfr} show that CFR can solve games with up to $10^{12}$ states, such as Texas Hold'em. We therefore expect it to perform well on reduced variants of traditional poker, such as Kuhn and Leduc poker.\\
 
-An important concept in reinforcement learning is the notion of regret, which can be paraphrased as the difference between maximum and actual payoff an agent receives when executing a sequence of steps. The goal of many reinforcement learning algorithms is to minimize regret. What makes regret minimization less applicable in large games, is that regret is to be minimized over all game states. This quickly becomes infeasible when dealing with a large number of states. The general idea of counterfactual regret minimization is to decompose regret into a set of regret terms, whose som approaches the actual regret. \citeauthor{cfr} then show that individually minimizing these regret terms leads to a Nash equilibrium. We will now introduce counterfactual regret minimization more formally, based on \citep{cfr_for_beginners}\\
+An important concept in reinforcement learning is the notion of regret, which can be paraphrased as the difference between maximum and actual payoff an agent receives when executing a sequence of steps. The goal of many reinforcement learning algorithms is to minimize regret. What makes regret minimization less applicable in large games, is that regret is to be minimized over all game states. This quickly becomes infeasible when dealing with a large number of states. The general idea of counterfactual regret minimization is to decompose regret into a set of regret terms, whose sum approaches the actual regret. \citeauthor{cfr} then show that individually minimizing these regret terms leads to a Nash equilibrium. We will now introduce counterfactual regret minimization more formally, based on \citep{cfr_for_beginners}\\
 
 \begin{itemize}
 \item{A history $h$ is a sequence of actions performed by the agents, starting from the root of the game tree (the initial state). }
@@ -114,7 +114,7 @@ In this equation, $A(I)$ denotes the set of actions that can be taken in informa
 
 It should be noted that the average strategy converges to a Nash equilibrium, and not the final strategy. When discussing results of policies obtained using CFR, it is implicitly assumed we have extracted the average policy after training.
 
-Most succesful approaches to learning large imperfect-information games (such as Kuhn Poker and Leduc Poker) are based on CFR. We will now take a closer look at two variants of classical CFR, that try to overcome the limitations of strictly tabular approach. When the number of states is very large, it becomes increasingly infeasible to calculate counterfactual regret values for each and every information state. To solve this, abstraction is often introduced: aggregating information states to reduce the size of the game. Regression CFR applies the principle of abstraction. Deep CFR uses a deep learning to approximate CFR, without using abstraction.\citep{dcfr}
+Most succesful approaches to learning large imperfect-information games (such as Kuhn Poker and Leduc Poker) are based on CFR. We will now take a closer look at two variants of classical CFR, that try to overcome the limitations of strictly tabular approach. When the number of states is very large, it becomes increasingly infeasible to calculate counterfactual regret values for each and every information state. To solve this, abstraction is often introduced: aggregating information states to reduce the size of the game. Regression CFR applies the principle of abstraction.
 
 \subsubsection{Extension: Regression Counterfactual Regret Minimization}
 \label{sub:rcfr}
@@ -124,12 +124,52 @@ One interesting property of using regression CFR (RCFR) is the fact that a game 
 
 As such, we note that using RCFR instead of regular CFR should be used as a technique to make learning more tractable, and not to decrease exploitability. Therefore, the goal should be to approximate the exploitability reached by CFR, but with a reduced number of states.
 
-OpenSpiel supports using RCFR with a user-defined regressor. We chose to use a feedforward neural network. We will examine the results of different network sizes in Section 2 and 3.
+Openspiel supports using RCFR with a user-defined regressor. We chose to use a feedforward neural network. We will examine the results of different network sizes in Section 2 and 3.
 
 
 \section{Kuhn Poker}
 \subsection{NFSP and XFSP}
-\begin{table}[h]
+In the following section we discuss results of the NFSP and XFSP algorithm (as discribed in \ref{sub:nfsp} and \ref{sub:xfsp}). We use the XFSP algorithm as a baseline, because it is the exact interpretation of the Fictious Self Play algorithm. Next, we optimize different parameters of the NFSP algorithm for Kuhn and Leduc poker. Lastly, we compare the computational effort needed to run both algorithms in different settings.
+
+We use the results of \citeauthor{heinrichphd} \cite{heinrichphd} (who use NFSP to learn Leduc Poker) and try to replicate their testing methodology for Kuhn Poker.
+First we try to find the optimal size of neural network for Kuhn Poker. This is important as the size of the network greatly influences the training time.
+\citeauthor{heinrichphd} \cite{heinrichphd} suggest an ANN with 1 hidden layer of 64 nodes for the Leduc Poker setting. Therefore, we start with 1 layer of 64 nodes. To examine the influence of the number of nodes, we use 1 layer, and vary the number of nodes. Similarly, to examine the influence of the number of layers, we use 64 nodes, and vary the number of layers.
+We ran the algorithm for 25 000 iterations to keep the execution time manageable, while still getting representative results.
+
+\begin{center}
+\begin{figure}[h]
+\label{fig:layers_kuhn}
+\includegraphics[width=0.5\textwidth]{Figures/kuhn_nodes.png}
+\includegraphics[width=0.5\textwidth]{Figures/kuhn_layers.png}
+\caption{Influence of ANN layer settings in NFSP on exploitability Kuhn Poker}
+\end{figure}
+\end{center}
+
+We see that the size of layers greatly influences the exploitability when learning Kuhn Poker. In general, a lower number of layers is preferred. At the same time, it appears that a higher number of nodes gives better results. This confirms the findings of \citeauthor{heinrichphd} \cite{heinrichphd}. However, we find that the sweet spot lies at 64 nodes per layer, which results in a manageable training time and gives decent performance.
+
+
+Assuming that these are good parameters for Kuhn Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 100 000 iterations. This number was chosen as the XFSP algorithm does not improve significantly beyond this point. XFSP clearly outperform NFSP in this experiment. This is not suprising at all as the NFSP algorithm is an approximization of the real Fictious Self Play paradigm.
+
+\begin{figure}[h]
+\centering
+\label{fig:layers_kuhn}
+\includegraphics[width=0.5\textwidth]{Figures/xfsp_nfsp_kuhn.png}
+\caption{Exploitability of XFSP and NFSP on Kuhn Poker}
+\end{figure}
+
+%In this last figure, the algorithm NFSP algorithm is ran for 3.000.000 iterations to show what it is capable of. Sadly we were not able to achieve the results for Leduc Poker as described in \cite{heinrichphd}.
+
+% \begin{center}
+% \begin{figure}[h]
+% \label{fig:full_run_nfsp}
+% \centering
+% \includegraphics[width=0.5\textwidth]{Figures/nfsp_full_run.jpg}
+% \end{figure}
+% \end{center}
+
+To conclude this section, we compare the computational effort needed to train the XFSP algorithm and the optimal settings for the NFSP algorithm. From table \ref{tab:time_fsp_kuhn} we can see the XSFP algorithm is much more computationally intesive then the NFSP algorithm. This makes it unsuitable for larger games. Both Leduc Poker and Kuhn Poker are too small to really show the benefit of using the NFSP algorithm, for our application the improved training time of NFSP does not weigh up against the improved exploitability of XFSP.
+
+\begin{table}[!h]
 \begin{center}
 \begin{tabular}{|l|r|}
 \hline 
@@ -158,57 +198,16 @@ NFSP 1 layer, 32 nodes & 38 \\
 NFSP 1 layer, 128 nodes & 64 \\ 
 \hline 
 \end{tabular}
-\caption{Running time FSP algorithms for Kuhn Poker}
+\caption{Computation time of FSP algorithms for Kuhn Poker, averaged over 50 episodes}
+\label{tab:time_fsp_kuhn}
 \end{center}
 \end{table} 
-
-
-In the following section we discuss results of the NFSP and XFSP algorithm (as discribed in \ref{sub:nfsp} and \ref{sub:xfsp}). We use the XFSP algorithm as a baseline, because it is the exact interpretation of the Fictious Self Play algorithm. Next, we optimize different parameters of the NFSP algorithm for Kuhn and Leduc poker. Lastly, we compare the computational effort needed to run both algorithms in different settings.
-
-We use the results of \citeauthor{heinrichphd} \cite{heinrichphd} (who use NFSP to learn Leduc Poker) and try to replicate their testing methodology for Kuhn Poker.
-First we try to find the optimal size of neural network for Kuhn Poker. This is important as the size of the network greatly influences the training time.
-\citeauthor{heinrichphd} \cite{heinrichphd} suggest an ANN with 1 hidden layer of 64 nodes for the Leduc Poker setting. Therefore, we start with 1 layer of 64 nodes. To examine the influence of the number of nodes, we use 1 layer, and vary the number of nodes. Similarly, to examine the influence of the number of layers, we use 64 nodes, and vary the number of layers.
-We ran the algorithm for 25 000 iterations to keep the execution time manageable, while still getting representative results.
-
-\begin{center}
-\begin{figure}[h]
-\label{fig:layers_kuhn}
-\includegraphics[width=0.5\textwidth]{Figures/kuhn_nodes.png}
-\includegraphics[width=0.5\textwidth]{Figures/kuhn_layers.png}
-\caption{Influence of ANN layer settings in NFSP on exploitability Kuhn Poker}
-\end{figure}
-\end{center}
-
-We see that the size of layers greatly influences the exploitability when learning Kuhn Poker. In general, a lower number of layers is preferred. At the same time, it appears that a higher number of nodes gives better results. This confirms However, we find that the sweet spot lies at 64 nodes per layer, which results in a manageable training time and gives decent performance.
-An important remark is that the algorithm does not improve its exploitability for a long time. Around the 10.000th iteration the exploitability start to drop. 
-
-Assuming that these are good parameters for Kuhn Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 100 000 iterations. This number was chosen as the XFSP algorithm does not improve significantly beyond this point. XFSP clearly outperform NFSP in this experiment.
-
-\begin{figure}[h]
-\centering
-\label{fig:layers_kuhn}
-\includegraphics[width=0.5\textwidth]{Figures/xfsp_nfsp_kuhn.png}
-\caption{Exploitability of XFSP and NFSP on Kuhn Poker}
-\end{figure}
-
-%In this last figure, the algorithm NFSP algorithm is ran for 3.000.000 iterations to show what it is capable of. Sadly we were not able to achieve the results for Leduc Poker as described in \cite{heinrichphd}.
-
-% \begin{center}
-% \begin{figure}[h]
-% \label{fig:full_run_nfsp}
-% \centering
-% \includegraphics[width=0.5\textwidth]{Figures/nfsp_full_run.jpg}
-% \end{figure}
-% \end{center}
-
-To conclude this section, we compare the computational effort needed to train the XFSP algorithm and the optimal settings for the NFSP algorithm. From table \ref{tab:time_fsp} we can see the XSFP algorithm is much more computationally intesive then the NFSP algorithm. This makes it unsuitable for larger games. Both Leduc Poker and Kuhn Poker are too small to really show the benefit of using the NFSP algorithm, in our opinion the improved training time of NFSP does not weigh up against the improved exploitability of XFSP.
-
-
+\FloatBarrier
 \subsection{CFR and RCFR}
 
 In this section, the goal is twofold. First, we analyze how Counterfactual Regret Minimization (CFR, as described in \ref{sub:cfr}) performs when learning Kuhn Poker. Next, we examine under which circumstances RCFR (Regression CFR, see \ref{sub:rcfr}) can be used as a viable alternative to CFR.
 
-As mentioned before, openspiel uses a feedforward neural network as a regressor for RCFR. We can modify the number of layers and hidden nodes per layer. The following graphs show how the number of layers and nodes influences RCFR's performance compared to CFR. We tracked the exploitability of the average policy every 10 iterations. These experiments were limited in length, with only 1000 iterations. Therefore, we will only draw general conclusions, as is it not clear how results generalize to longer experiments. However, based on the graphs and the minimal difference between successive exploitability values, we suspect no large improvements to happen when increasing the number of iterations to 10 000, or 100 000.
+As mentioned before, Openspiel uses a feedforward neural network as a regressor for RCFR. We can modify the number of layers and hidden nodes per layer. The following graphs show how the number of layers and nodes influences RCFR's performance compared to CFR. We tracked the exploitability of the average policy every 10 iterations. These experiments were limited in length, with only 1000 iterations. Therefore, we will only draw general conclusions, as is it not clear how results generalize to longer experiments. However, based on the graphs and the minimal difference between successive exploitability values, we suspect no large improvements to happen when increasing the number of iterations to 10 000, or 100 000.
  
 
 \FloatBarrier
@@ -225,7 +224,7 @@ It immediately becomes very clear that CFR performs very well when learning Kuhn
 
 We therefore recommend decreasing the number of layers as much as possible, provided that the exploitability does not appear to worsen. This approach will greatly reduce the time needed to train the agent, as is shown in Table \ref{tbl:kuhn_times}
 
-\begin{table}
+\begin{table}[h]
 \centering
 \begin{tabular}{|l|r|}
 \hline
@@ -252,14 +251,14 @@ RCFR, 16 layers, 256 nodes & 475 \\
 RCFR, 16 layers, 1024 nodes & 498 \\
 \hline
 \end{tabular}
-\caption{Computation time of one iteration for Kuhn Poker, averaged over 50 episodes}
+\caption{Computation time of CFR algorithms for Kuhn Poker, averaged over 50 episodes}
 \label{tbl:kuhn_times}
 \end{table}
 
 As expected, RCFR is always much slower than CFR. But when using RCFR, increasing and decreasing the number of layers is mainly what impacts the time per iteration. Based on Figure \ref{fig:rcfr_kuhn} and \ref{tbl:kuhn_times}, we conclude that a network of 4 layers and 64 nodes is our current best setting for RCFR. A neural network with these parameters seems to be expressive enough to predict counterfactual regret values, as increasing the size of the ANN does not improve performance. However, even with these seemingly good parameters, the exploitability of a policy learned by RCFR is much higher than one learning by CFR. 
 
 \subsection{XFSP vs CFR}
- In this final section for Kuhn Poker, we compare the performance of the current best algorithms (XFSP and CFR) in a longer experiment. For Kuhn Poker, we chose to train both agents for 100 000 episodes. In longer runs (up to 3 million episodes), the marginal performance gain did not justify the additional training time. Training for 100.000 episodes could take up to 48 hours for XFSP).
+ In this final section for Kuhn Poker, we compare the performance of the current best algorithms (XFSP and CFR) in a longer experiment. For Kuhn Poker, we chose to train both agents for 100 000 episodes. This number was choosen as both algorithms do not improve significantly beyond this point for Kuhn Poker.
 
 \begin{figure}[h]
 \centering
@@ -276,16 +275,15 @@ CFR clearly outperforms XFSP, although both algorithms find the Nash equilibrium
 \begin{itemize}
 \item{Which algorithm is most suitable to develop an agent to play Leduc Poker, minimizing exploitability?}
 \item{Can we exploit properties of Leduc Poker to optimize parameters?}
-\item{Under which circumstances does RCFR approach classical CFR when learning Kuhn Poker?}
+\item{Under which circumstances does RCFR approach classical CFR when learning Leduc Poker?}
 \end{itemize}
 \end{tcolorbox}
 \subsection{NFSP and XFSP}
 For the Leduc variant of the poker game, we partly repeat our testing methodology for NFSP and XFSP. We first test the impact of the number of layers and hidden nodes used in the NFSP agents. Next, we compare NFSP and XFSP in both performance as well as computational effort needed to train the agents.
  
-On the left hand side of figure \ref{fig:layers_leduc}, we see examine the impact of adding layers to the neural network of NFSP. From this figure, we can conclude the optimal configuration is to only use one layer in the ANN. This result confirms what \cite{heinrichphd} suggests.
+On the left hand side of figure \ref{fig:layers_leduc}, we see examine the impact of adding layers to the neural network of NFSP. From this figure, we can conclude the optimal configuration is to only use one layer in the ANN. This result confirms what \citeauthor{heinrichphd} \cite{heinrichphd} suggests.
 On the right hand side of this figure, we compare the configuration of individual layers. We vary the number of hidden nodes from 4 to 128. This way we can examine the optimal number of nodes with resprect to the exploitability of the policy.
 From the figure we can conclude 4 nodes is clearly too little to approximate the function needed. Even more striking is the fact that there is no real difference between using 64 or 128 nodes per layer. This result comes in handy when using NFSP in experiments with more iteration as the training time is significantly increased from 64 nodes to 128 nodes (see Table \ref{tab:fsp_leduc}).
-
 \begin{center}
 \begin{figure}[h]
 \label{fig:layers_leduc}
@@ -294,8 +292,7 @@ From the figure we can conclude 4 nodes is clearly too little to approximate the
 \caption{Influence of ANN layer settings in NFSP on exploitability Leduc Poker}
 \end{figure}
 \end{center}
-
-To compare the performace of NFSP and XFSP, we trained both agents for 60.000 iterations. Beyond this point, the marginal gains in exploitability were not worth the extra training time needed. This becomes clear in the overview of training times in Table \ref{tab:fsp_leduc}. Like the experiment with Kuhn Poker, the XFSP agent greatly outperforms the NFSP agent. 
+To compare the performace of NFSP and XFSP, we trained both agents for 60.000 iterations. Beyond this point, the marginal gains in exploitability were not worth the extra training time needed for training the XFSP agent. This becomes clear in the overview of training times in Table \ref{tab:fsp_leduc}. Like the experiment with Kuhn Poker, the XFSP agent greatly outperforms the NFSP agent. However, the training time needed by the XFSP agent is several factors higher then the NFSP variant and took over 48 hours for this experiment.
 
 \begin{center}
 	\begin{figure}[h]
@@ -306,7 +303,7 @@ To compare the performace of NFSP and XFSP, we trained both agents for 60.000 it
 	\end{figure}
 	\end{center}
 
-\begin{table}
+\begin{table}[h]
 \begin{center}
 \begin{tabular}{|l|r|}
 \hline 
@@ -334,11 +331,12 @@ NFSP 1 layer, 32 nodes & 38 \\
 NFSP 1 layer, 128 nodes & 85 \\ 
 \hline 
 \end{tabular}
-\caption{Running time FSP algorithms for Leduc Poker}
+\caption{Computation time of FSP algorithms for Leduc Poker, averaged over 50 episodes}
 \label{tab:fsp_leduc}
 \end{center}
 \end{table} 
 
+\FloatBarrier
 \subsection{CFR and RCFR}
 
 \begin{figure}[h]
@@ -354,7 +352,7 @@ Again, we examine the exploitability of CFR and RCFR in an experiment of 1000 it
 Table \ref{tbl:leduc_times} shows how long one iteration takes to compute. Again, using RCFR is slower than using CFR, as expected. It should be noted that the difference in execution time between CFR and RCFR is much smaller for Leduc Poker than for Kuhn Poker: in Kuhn Poker, introducing regression multiplied the time for one iteration by at least 30. In Leduc Poker, this factor is only 3.
 
 \FloatBarrier
-\begin{table}
+\begin{table}[h]
 	\centering
 	\begin{tabular}{|l|r|}
 	\hline
@@ -381,7 +379,7 @@ Table \ref{tbl:leduc_times} shows how long one iteration takes to compute. Again
 	RCFR, 16 layers, 1024 nodes & 4364 \\
 	\hline
 	\end{tabular}
-	\caption{Computation time of one iteration for Leduc Poker, averaged over 50 episodes}
+	\caption{Computation time of CFR algorithms for Leduc Poker, averaged over 50 episodes}
 	\label{tbl:leduc_times}
 \end{table}
 \FloatBarrier
@@ -411,7 +409,7 @@ Based on the results shown in Section 2 and 3, we draw some important conclusion
 
 \begin{itemize}
 \item{Out of the four algorithms we examined, CFR consistently performs best. }
-\item{Both Kuhn and Leduc Poker are not large enough to require RCFR.}
+\item{Both Kuhn and Leduc Poker are not large enough to require RCFR nor NFSP.}
 \item{When using RCFR with an ANN, a larger amonut of hidden layers improves learning, at the cost of increased computation time.}
 \end{itemize}
 
@@ -431,6 +429,7 @@ The workload for this assignment was as expted for a 3 ECTS-credit course. Our w
 \item{\textbf{Running experiments and collecting data: } the biggest task was run all relevant experiments and collect data. We estimate this took about 20 hours of actual work for each one of us. (not including leaving our pc running during experiments).}
 \item{\textbf{Report: } we generated the graphs, tables, and wrote this report over the course of two days, totalling about 15 hours of work for each one of us.}
 \end{itemize}
+\newpage
 \subsection{Code}
 This section contains the code for the training of all our agents.
 It should be noted that many of the bookkeeping functionality to perform the experiments is removed from the listing. This would make most of the code very unreadable and irrelevant.
@@ -441,22 +440,21 @@ def xfsp_train(_):
     exploit_idx = list()
     game = pyspiel.load_game(FLAGS.game,{"players": pyspiel.GameParameter(2)})
     fsp_solver = fictitious_play.XFPSolver(game)
-    checkpoint = datetime.now()
     for ep in range(FLAGS.episodes):
-        if (ep % 100) == 0:
+        if ep % 100 == 0:
             pol = policy.PolicyFromCallable(game, fsp_solver.average_policy_callable())
-            conv = exploitability.exploitability(game,pol)
-            exploit_history.append(conv)
-            exploit_idx.append(ep).
-            print("[CFR] Iteration {}, Exploitability {}".format(ep, expl))
+            expl = exploitability.exploitability(game,pol)
+            exploit_history.append(expl)
+            exploit_idx.append(ep)
+            print("[XFSP] Iteration {}, Exploitability {}".format(ep, expl))
 
         fsp_solver.iteration()
 
     agent_name = "xfsp"
     pickle.dump([exploit_idx,exploit_history],
-    		open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+            open("{}_{}_{}.dat".format(FLAGS.game,agent_name,FLAGS.episodes),"wb"))
 
-def nfsp_train(_):
+def nfsp_train(unused_arg):
     env = rl_environment.Environment(FLAGS.game)
     state_size = env.observation_spec()["info_state"][0]
     num_actions = env.action_spec()["num_actions"]
@@ -467,10 +465,8 @@ def nfsp_train(_):
       "epsilon_end": 0.001,
     }
     sess =  tf.Session()
-    players = [nfsp.NFSP(sess,idx,
-                    state_representation_size=state_size,
-                    num_actions=num_actions,
-                    hidden_layers_sizes=64,
+    players = [nfsp.NFSP(sess,idx,state_representation_size=state_size,num_actions=num_actions,
+                    hidden_layers_sizes=[64],
                     reservoir_buffer_capacity=2e6,
                     rl_learning_rate=0.1,
                     sl_learning_rate=0.005,
@@ -512,31 +508,34 @@ def run_nfsp_agents(sess, env, agents, expl_policies_avg):
 
     agent_name = "nfsp"
     pickle.dump([exploit_idx,exploit_history],
-    		open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+            open("{}_{}_{}.dat".format(FLAGS.game,agent_name,FLAGS.episodes),"wb"))
+
     
-def cfr_train(_):
-   exploit_history = list()
-   exploit_idx = list()
-   game = pyspiel.load_game(FLAGS.game,{"players": pyspiel.GameParameter(2)})
-   cfr_solver = cfr.CFRSolver(game)
-   checkpoint = datetime.now()
-   for ep in range(FLAGS.episodes):
-       cfr_solver.evaluate_and_update_policy()
-       if ep % 100 == 0:
-           delta = datetime.now() - checkpoint
-           expl = exploitability.exploitability(game, cfr_solver.average_policy())
-           exploit_idx.append(ep)
-           exploit_history.append(conv)
-           print("[CFR] Iteration {}, Exploitability {}".format(ep, expl))
-           checkpoint = datetime.now()
+def cfr_train(unused_arg):
+    exploit_history = list()
+    exploit_idx = list()
+    game = pyspiel.load_game(FLAGS.game,{"players": pyspiel.GameParameter(2)})
+    cfr_solver = cfr.CFRSolver(game)
+    checkpoint = datetime.now()
+    for ep in range(FLAGS.episodes):
+        cfr_solver.evaluate_and_update_policy()
+        if ep % 100 == 0:
+            delta = datetime.now() - checkpoint
+            expl = exploitability.exploitability(game, cfr_solver.average_policy())
+            exploit_idx.append(ep)
+            exploit_history.append(expl)
+            print("[CFR] Iteration {}, Exploitability {}".format(ep, expl))
+            checkpoint = datetime.now()
     
-   agent_name = "cfr"
-   pickle.dump([exploit_idx,exploit_history],
-   		open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+    agent_name = "cfr"
+    pickle.dump([exploit_idx,exploit_history],
+            open("{}_{}_{}.dat".format(FLAGS.game,agent_name,FLAGS.episodes),"wb"))
+
 \end{lstlisting}
 \newpage
 \begin{lstlisting}[language=Python]
-def rcfr_train(_):
+def rcfr_train(unused_arg):
+    tf.enable_eager_execution()
     game = pyspiel.load_game(FLAGS.game,{"players": pyspiel.GameParameter(2)})
     models = [rcfr.DeepRcfrModel(
                         game,
@@ -552,25 +551,49 @@ def rcfr_train(_):
     def _train(model, data):
         data = data.shuffle(1000)
         data = data.batch(12)
-        #data = data.repeat(1)  
         optimizer = tf.keras.optimizers.Adam(lr=0.005, amsgrad=True)    
         for x, y in data:
             optimizer.minimize(
                 lambda: tf.losses.huber_loss(y, model(x)),  # pylint: disable=cell-var-from-loop
                 model.trainable_variables)
 
-    for iteration in range(FLAGS.episodes):
-        if (iteration % 100) == 0:
-            conv = pyspiel.exploitability(game, patient.average_policy())
-            exploit_idx.append(iteration)
-            exploit_history.append(conv)
+    for ep in range(FLAGS.episodes):
+        if (ep % 100) == 0:
+            expl = pyspiel.exploitability(game, patient.average_policy())
+            exploit_idx.append(ep)
+            exploit_history.append(expl)
             print("[CFR] Iteration {}, Exploitability {}".format(ep, expl))
         patient.evaluate_and_update_policy(_train)
 
     agent_name = "rcfr"
     pickle.dump([exploit_idx,exploit_history],
-    		open(FLAGS.game+"_"+agent_name+"_"+str(FLAGS.episodes)+".dat","wb"))
+            open("{}_{}_{}.dat".format(FLAGS.game,agent_name,FLAGS.episodes),"wb")) 
 
+class NFSPPolicies(policy.Policy):
+  def __init__(self, env, nfsp_policies, mode):
+    game = env.game
+    player_ids = [0, 1]
+    super(NFSPPolicies, self).__init__(game, player_ids)
+    self._policies = nfsp_policies
+    self._mode = mode
+    self._obs = {"info_state": [None, None], "legal_actions": [None, None]}
+
+  def action_probabilities(self, state, player_id=None):
+    cur_player = state.current_player()
+    legal_actions = state.legal_actions(cur_player)
+
+    self._obs["current_player"] = cur_player
+    self._obs["info_state"][cur_player] = (
+        state.information_state_tensor(cur_player))
+    self._obs["legal_actions"][cur_player] = legal_actions
+
+    info_state = rl_environment.TimeStep(
+        observations=self._obs, rewards=None, discounts=None, step_type=None)
+
+    with self._policies[cur_player].temp_mode_as(self._mode):
+      p = self._policies[cur_player].step(info_state, is_evaluation=True).probs
+    prob_dict = {action: p[action] for action in legal_actions}
+    return prob_dict
 \end{lstlisting}
 
 \end{document}
