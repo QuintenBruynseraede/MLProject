@@ -148,12 +148,14 @@ We ran the algorithm for 25 000 iterations to keep the execution time manageable
 We see that the size of layers greatly influences the exploitability when learning Kuhn Poker. In general, a lower number of layers is preferred. At the same time, it appears that a higher number of nodes gives better results. This confirms the findings of \citeauthor{heinrichphd} \cite{heinrichphd}. However, we find that the sweet spot lies at 64 nodes per layer, which results in a manageable training time and gives decent performance.
 
 
-Assuming that these are good parameters for Kuhn Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 100 000 iterations. This number was chosen as the XFSP algorithm does not improve significantly beyond this point. XFSP clearly outperform NFSP in this experiment. This is not suprising at all as the NFSP algorithm is an approximization of the real Fictious Self Play paradigm.
+Assuming that these are good parameters for Kuhn Poker, we compare the optimal settings with the fully fledged XFSP algorithm for the first 100 000 iterations. This number was chosen as the XFSP algorithm does not improve significantly beyond this point. XFSP clearly outperform NFSP in this experiment, this is shown on the left hand side of Figure 2. This is not suprising at all as the NFSP algorithm is an approximization of the real Fictious Self Play paradigm.
+On the right hand side of Figure 2, we see that the NFSP agent is able to reduce its exploitability significantly after 3 million iterations, however it still does not come close to the level of the XFSP agent.
 
 \begin{figure}[h]
+\label{fig:nfsp_xfsp_kuhn}
 \centering
-\label{fig:layers_kuhn}
-\includegraphics[width=0.5\textwidth]{Figures/xfsp_nfsp_kuhn.png}
+\includegraphics[width=0.4\textwidth]{Figures/xfsp_nfsp_kuhn.png}
+\includegraphics[width=0.4\textwidth]{Figures/kuhn_full_run.jpg}
 \caption{Exploitability of XFSP and NFSP on Kuhn Poker}
 \end{figure}
 
@@ -262,7 +264,7 @@ As expected, RCFR is always much slower than CFR. But when using RCFR, increasin
 
 \begin{figure}[h]
 \centering
-\includegraphics[scale=0.4]{Figures/cfr_vs_xfsp_kuhn.png}
+\includegraphics[width=0.4\textwidth]{Figures/cfr_vs_xfsp_kuhn.png}
 \caption{XFSP vs CFR for Kuhn Poker}
 \end{figure}
 
@@ -293,12 +295,14 @@ From the figure we can conclude 4 nodes is clearly too little to approximate the
 \end{figure}
 \end{center}
 To compare the performace of NFSP and XFSP, we trained both agents for 60.000 iterations. Beyond this point, the marginal gains in exploitability were not worth the extra training time needed for training the XFSP agent. This becomes clear in the overview of training times in Table \ref{tab:fsp_leduc}. Like the experiment with Kuhn Poker, the XFSP agent greatly outperforms the NFSP agent. However, the training time needed by the XFSP agent is several factors higher then the NFSP variant and took over 48 hours for this experiment.
+As with the Kuhn Poker experiment, it should be noted that the NFSP agent is able to reduce its exploitability, all be it with much more iterations than the XFSP agent. However, the experiment with this last agent for 3 million episodes took much less time than the XFSP experiment on the left hand side of \ref{fig:xfsp_nfsp_leduc}
 
 \begin{center}
 	\begin{figure}[h]
 	\centering
-	\label{fig:layers_kuhn}
-	\includegraphics[width=0.5\textwidth]{Figures/xfsp_nfsp_leduc.png}
+	\label{fig:xfsp_nfsp_leduc}
+	\includegraphics[width=0.4\textwidth]{Figures/xfsp_nfsp_leduc.png}
+	\includegraphics[width=0.4\textwidth]{Figures/leduc_full_run.jpg}
 	\caption{Exploitability when using NFSP and XFSP on Leduc Poker}
 	\end{figure}
 	\end{center}
